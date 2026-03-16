@@ -969,6 +969,18 @@
 
   function showTtvNotification(message) {
     var existing = document.getElementById("ttv-kekw-notif");
+
+    // If the same message is already showing, just reset the dismiss timer
+    if (existing && existing.textContent === message) {
+      if (_notifTimeout) { clearTimeout(_notifTimeout); }
+      _notifTimeout = setTimeout(function () {
+        existing.style.opacity = "0";
+        setTimeout(function () { if (existing.parentNode) existing.remove(); }, 400);
+        _notifTimeout = null;
+      }, 4000);
+      return;
+    }
+
     if (existing) existing.remove();
     if (_notifTimeout) { clearTimeout(_notifTimeout); _notifTimeout = null; }
 
