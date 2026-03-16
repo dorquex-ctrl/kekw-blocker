@@ -1,0 +1,13 @@
+{
+  "_version": 2,
+  "_lastChecked": "2026-03-16T04:16:57.440Z",
+  "_note": "Auto-updated by scripts/extract-config.js. Extension fetches this at runtime.",
+  "playbackAccessTokenHash": "ed230aa1e33e07eebb8928504583da78a5173989fadfb1ac94be06a04f3cdbe9",
+  "clientId": "b31o4btkqth5bzbvr9ub2ovr79umhh",
+  "blockedOperations": [
+    "RunMidroll",
+    "RunMidrollAd",
+    "RunCommercial"
+  ],
+  "_lastUpdateSource": "regex-extraction"
+}
