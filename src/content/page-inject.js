@@ -13,6 +13,11 @@
   var _cfgPlayer = _cfg.player || {};
   var _cfgReact = _cfg.react || {};
 
+  // Main-thread ad state — used to restore quality after backup stream ads
+  var _isBlockingAds = false;
+  var _preAdQuality = null;
+  var _lsCachedValues = null;
+
   // --- Options (shared between main thread and worker via toString injection)
 
   // declareOptions is stringified into the Worker blob, so it CANNOT reference
@@ -151,13 +156,25 @@
             else doTwitchPlayerTask(false, true);
           }
           else if (e.data.key == "StreamInitialized") {
+            _isBlockingAds = false;
+            _preAdQuality = null;
             preWarmBackupStreams(e.data.channelName, e.data.usherParams, e.data.v2api, workerRef);
           }
           else if (e.data.key == "UpdateAdBlockBanner") {
+            if (e.data.hasAds && !_isBlockingAds) {
+              // Save pre-ad quality so backup stream transcode tiers don't persist
+              if (_lsCachedValues) _preAdQuality = _lsCachedValues.get("video-quality");
+            }
             if (e.data.hasAds) {
               showTtvNotification("KEKW Blocker: Blocking ads — stream quality may be temporarily reduced");
+            } else if (!e.data.hasAds && _isBlockingAds) {
+              // Restore pre-ad quality
+              if (_preAdQuality && _lsCachedValues) {
+                _lsCachedValues.set("video-quality", _preAdQuality);
+              }
+              _preAdQuality = null;
             }
-            // Forward ad blocking stats to content script via custom event
+            _isBlockingAds = !!e.data.hasAds;
             window.dispatchEvent(new CustomEvent("ttv-" + _nonce + "-adblock-status", {
               detail: {
                 hasAds: e.data.hasAds,
@@ -1230,6 +1247,7 @@
       for (var i = 0; i < keysToCache.length; i++) {
         cachedValues.set(keysToCache[i], localStorage.getItem(keysToCache[i]));
       }
+      _lsCachedValues = cachedValues;
       var realSetItem = localStorage.setItem;
       localStorage.setItem = function (key, value) {
         if (cachedValues.has(key)) cachedValues.set(key, value);
