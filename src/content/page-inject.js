@@ -939,7 +939,13 @@
     playerBufferState.numSame = 0;
     if (isPausePlay) {
       ps.player.pause();
-      ps.player.play();
+      // Delay + no-op seek to force audio/video decoders to resync.
+      // Synchronous pause/play on demuxed HLS can leave tracks at different positions.
+      var video = ps.player.getHTMLVideoElement ? ps.player.getHTMLVideoElement() : null;
+      setTimeout(function () {
+        if (video) video.currentTime = video.currentTime;
+        ps.player.play();
+      }, 100);
       return;
     }
     if (isReload) {
@@ -963,7 +969,14 @@
       try {
         ps.state.setSrc({ isNewMediaPlayerInstance: true, refreshAccessToken: true });
         postTwitchWorkerMessage("TriggeredPlayerReload");
-        ps.player.play();
+        // Delay play() to let setSrc initialize the new player instance.
+        // Calling play() synchronously operates on a stale/transitional player.
+        setTimeout(function () {
+          try {
+            var newPs = getPlayerAndState();
+            if (newPs && newPs.player) newPs.player.play();
+          } catch (e) {}
+        }, 500);
       } catch (e) {
         console.warn("[TTV] Player reload failed:", e.message);
       }
@@ -1016,7 +1029,8 @@
     var useAbsolute = !!player;
 
     el.style.cssText = "position:" + (useAbsolute ? "absolute" : "fixed") + ";" +
-      "top:12px;left:50%;transform:translateX(-50%);" +
+      "top:12px;left:50%;transform:translateX(-50%);height:auto;bottom:auto;" +
+      "max-width:90%;width:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" +
       "background:rgba(14,14,16,0.85);color:#efeff1;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;" +
       "font-size:12px;font-weight:500;padding:6px 16px;border-radius:6px;z-index:999999;" +
       "pointer-events:none;opacity:0;transition:opacity 0.3s;";
