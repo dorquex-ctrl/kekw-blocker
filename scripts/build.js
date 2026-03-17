@@ -80,7 +80,7 @@ function copyDir(src, dest, filter) {
 
 /** Directories and files to exclude from the build. */
 const EXCLUDE_DIRS = new Set(['node_modules', '.git', '.github', 'scripts', 'dist']);
-const EXCLUDE_FILES = new Set(['manifest.firefox.json', 'remote-config.json', 'README.md', 'LICENSE', '.gitignore', 'package.json', 'package-lock.json']);
+const EXCLUDE_FILES = new Set(['manifest.firefox.json', 'remote-config.json', 'README.md', 'LICENSE', 'SECURITY.md', '.gitignore', 'package.json', 'package-lock.json']);
 
 function globalFilter(relPath, entry) {
   const name = entry.name;

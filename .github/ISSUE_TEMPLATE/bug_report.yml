@@ -1,0 +1,57 @@
+name: Bug Report
+description: Report a problem with KEKW Blocker
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser
+      options:
+        - Chrome
+        - Brave
+        - Edge
+        - Firefox
+        - Opera
+        - Vivaldi
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Extension Version
+      description: Found in the popup header (e.g., v1.0.2)
+      placeholder: v1.0.2
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      placeholder: Describe the issue clearly.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to a Twitch stream
+        2. Wait for an ad break
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      placeholder: What should have happened instead?
+    validations:
+      required: false
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Screenshots, console errors, or anything else that might help.
+    validations:
+      required: false
