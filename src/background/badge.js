@@ -6,11 +6,13 @@ const Badge = {
     totalAdsBlocked: 0,
     segmentsRedirected: 0,
     trackingBlocked: 0,
+    timeSavedMs: 0,
   },
   _lifetime: {
     totalAdsBlocked: 0,
     segmentsRedirected: 0,
     trackingBlocked: 0,
+    timeSavedMs: 0,
     sessionsCount: 0,
     firstInstalled: null,
   },
@@ -40,7 +42,10 @@ const Badge = {
   recordBlock(type, channelName) {
     this._stats.totalAdsBlocked++;
     this._lifetime.totalAdsBlocked++;
-    if (type === 'segment') { this._stats.segmentsRedirected++; this._lifetime.segmentsRedirected++; }
+    if (type === 'segment') {
+      this._stats.segmentsRedirected++; this._lifetime.segmentsRedirected++;
+      this._stats.timeSavedMs += 5000; this._lifetime.timeSavedMs += 5000; // ~5s per segment
+    }
     else if (type === 'tracking') { this._stats.trackingBlocked++; this._lifetime.trackingBlocked++; }
 
     if (channelName) {

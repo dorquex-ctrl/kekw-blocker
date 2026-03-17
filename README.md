@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="https://ko-fi.com/dorquex"><img src="https://img.shields.io/badge/Support-Ko--fi-ff5e5b?logo=ko-fi&logoColor=white" alt="Ko-fi"></a>
-  <img src="https://img.shields.io/badge/version-1.0.1-bf94ff" alt="Version">
+  <img src="https://img.shields.io/badge/version-1.0.2-bf94ff" alt="Version">
   <img src="https://img.shields.io/badge/manifest-v2-333" alt="Manifest V2">
   <img src="https://img.shields.io/badge/chromium%20%7C%20firefox-supported-green" alt="Browsers">
 </p>
@@ -77,25 +77,27 @@ If everything fails, a **Discord alert** fires and a **GitHub Issue** is opened 
 
 The extension popup shows real-time status:
 
-- **Current channel** and blocking state (Clean / Blocking Ads / Substituting)
-- **Session stats** — ads blocked, segments redirected, tracking blocked
+- **Current channel** and blocking state (Protected / Blocking Ads)
+- **Session stats** — ads blocked, time saved, tracking blocked
 - **Lifetime stats** — persisted across sessions
 - **Quick toggle** to enable/disable blocking
+- **Settings gear** to open the options page
 
 ---
 
 ## Options
 
-Access via right-click extension icon > Options:
+Access via the gear icon in the popup or right-click extension icon > Options:
 
 | Setting | Description |
 |---------|-------------|
-| Force Player Type | Use `popout` or `embed` player type for access tokens (often ad-free) |
-| Reload After Ad | Full player reload when ads end to restore quality |
-| Block Tracking | Block requests to ad networks and tracking pixels |
-| Buffering Fix | Auto pause/resume when stream buffers |
-| Visibility Spoofing | Prevent Twitch from pausing when tab is inactive |
-| Auto-Claim Points | Automatically click channel points bonus button |
+| Stream Request Mode | How backup streams are requested (Recommended / Alternative / Off) |
+| Clean Restart After Ads | Seek to live edge when ads end for clean transition |
+| Block Ad Tracking | Block requests to ad networks (DoubleClick, Amazon Ads, etc.) |
+| Auto-Fix Buffering | Automatically recover when the stream stalls or buffers |
+| Prevent Background Pausing | Keep the stream playing when you switch to another tab |
+| Auto-Claim Channel Points | Automatically click the bonus channel points button |
+| Show Notifications | Display status banners on the stream when blocking ads or recovering |
 
 ---
 

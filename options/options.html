@@ -50,44 +50,44 @@ select {
   <h2>Ad Blocking</h2>
   <div class="option-row">
     <div class="option-info">
-      <div class="option-label">Force Player Type</div>
-      <div class="option-desc">Player type used for the main stream request</div>
+      <div class="option-label">Stream Request Mode</div>
+      <div class="option-desc">How backup streams are requested. Change only if ads get through.</div>
     </div>
-    <select id="forcePlayerType" aria-label="Force player type">
-      <option value="popout">popout (default)</option>
-      <option value="embed">embed</option>
-      <option value="">disabled</option>
+    <select id="forcePlayerType" aria-label="Stream request mode">
+      <option value="popout">Recommended</option>
+      <option value="embed">Alternative</option>
+      <option value="">Off</option>
     </select>
   </div>
   <div class="option-row">
     <div class="option-info">
-      <div class="option-label">Reload Player After Ad</div>
-      <div class="option-desc">Do a full player reload when ads end to ensure clean playback</div>
+      <div class="option-label">Clean Restart After Ads</div>
+      <div class="option-desc">Restart the player when ads end to ensure best quality</div>
     </div>
-    <label class="toggle"><input type="checkbox" id="reloadAfterAd" aria-label="Reload player after ad" checked><span class="toggle-slider"></span></label>
+    <label class="toggle"><input type="checkbox" id="reloadAfterAd" aria-label="Clean restart after ads" checked><span class="toggle-slider"></span></label>
   </div>
   <div class="option-row">
     <div class="option-info">
-      <div class="option-label">Block Tracking</div>
-      <div class="option-desc">Block spade.twitch.tv, countess, and ad network requests</div>
+      <div class="option-label">Block Ad Tracking</div>
+      <div class="option-desc">Block ad network requests from DoubleClick, Amazon Ads, etc.</div>
     </div>
-    <label class="toggle"><input type="checkbox" id="blockTracking" aria-label="Block tracking" checked><span class="toggle-slider"></span></label>
+    <label class="toggle"><input type="checkbox" id="blockTracking" aria-label="Block ad tracking" checked><span class="toggle-slider"></span></label>
   </div>
 
   <h2>Player</h2>
   <div class="option-row">
     <div class="option-info">
-      <div class="option-label">Buffering Auto-Fix</div>
-      <div class="option-desc">Automatically pause/play when playback stalls</div>
+      <div class="option-label">Auto-Fix Buffering</div>
+      <div class="option-desc">Automatically recover when the stream stalls or buffers</div>
     </div>
-    <label class="toggle"><input type="checkbox" id="bufferingFix" aria-label="Buffering auto-fix" checked><span class="toggle-slider"></span></label>
+    <label class="toggle"><input type="checkbox" id="bufferingFix" aria-label="Auto-fix buffering" checked><span class="toggle-slider"></span></label>
   </div>
   <div class="option-row">
     <div class="option-info">
-      <div class="option-label">Visibility Spoofing</div>
-      <div class="option-desc">Prevent Twitch from pausing when tab is inactive</div>
+      <div class="option-label">Prevent Background Pausing</div>
+      <div class="option-desc">Keep the stream playing when you switch to another tab</div>
     </div>
-    <label class="toggle"><input type="checkbox" id="visibilitySpoofing" aria-label="Visibility spoofing" checked><span class="toggle-slider"></span></label>
+    <label class="toggle"><input type="checkbox" id="visibilitySpoofing" aria-label="Prevent background pausing" checked><span class="toggle-slider"></span></label>
   </div>
 
   <h2>Quality of Life</h2>
@@ -97,6 +97,13 @@ select {
       <div class="option-desc">Automatically click the bonus channel points button</div>
     </div>
     <label class="toggle"><input type="checkbox" id="autoClaimPoints" aria-label="Auto-claim channel points" checked><span class="toggle-slider"></span></label>
+  </div>
+  <div class="option-row">
+    <div class="option-info">
+      <div class="option-label">Show Notifications</div>
+      <div class="option-desc">Show status banners on the stream when blocking ads or recovering</div>
+    </div>
+    <label class="toggle"><input type="checkbox" id="showNotifications" aria-label="Show notifications" checked><span class="toggle-slider"></span></label>
   </div>
 
   <div class="save-note">Settings are saved automatically</div>

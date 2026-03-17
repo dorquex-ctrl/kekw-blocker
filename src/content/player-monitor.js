@@ -5,6 +5,8 @@
 
   var AD_SELECTORS = TTV_CONFIG.selectors.adOverlay;
   var PURPLE_SCREEN_SELECTORS = TTV_CONFIG.selectors.purpleScreen;
+  var _adSelectorJoined = AD_SELECTORS.join(",");
+  var _purpleSelectorJoined = PURPLE_SCREEN_SELECTORS.join(",");
 
   var adBlockingEnabled = true;
   var adDetected = false;
@@ -39,8 +41,8 @@
     var channel = getChannelName();
     if (!channel) return;
 
-    var adOverlay = AD_SELECTORS.some(function(sel) { return document.querySelector(sel); });
-    var purpleScreen = PURPLE_SCREEN_SELECTORS.some(function(sel) { return document.querySelector(sel); });
+    var adOverlay = !!document.querySelector(_adSelectorJoined);
+    var purpleScreen = !!document.querySelector(_purpleSelectorJoined);
 
     if (purpleScreen) {
       purpleScreenCount++;

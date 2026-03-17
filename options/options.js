@@ -6,6 +6,7 @@
     bufferingFix: true,
     visibilitySpoofing: true,
     autoClaimPoints: true,
+    showNotifications: true,
   };
 
   var KEYS = Object.keys(DEFAULTS);

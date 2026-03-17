@@ -10,13 +10,10 @@
     }
 
     var dotClass = "dot-green";
-    var statusText = "Clean";
+    var statusText = "Protected";
     if (data.adActive) {
       dotClass = "dot-orange";
       statusText = "Blocking Ads";
-    } else if (data.state === "SUBSTITUTING") {
-      dotClass = "dot-orange";
-      statusText = "Substituting";
     }
 
     var html = '<div class="status-card">' +
@@ -28,17 +25,13 @@
         '<span class="status-label">Status</span>' +
         '<span class="status-value"><span class="dot ' + dotClass + '"></span>' + statusText + '</span>' +
       '</div>' +
-      '<div class="status-row">' +
-        '<span class="status-label">State</span>' +
-        '<span class="status-value">' + formatState(data.state) + '</span>' +
-      '</div>' +
     '</div>';
 
     // Session stats
     html += '<div class="section-label">This Session</div>';
     html += '<div class="stats-grid">' +
       statBox(data.channelAdsBlocked || 0, "Ads Blocked") +
-      statBox(data.stats.segmentsRedirected || 0, "Segments") +
+      statBox(formatTime(data.stats.timeSavedMs || 0), "Time Saved") +
       statBox(data.stats.trackingBlocked || 0, "Tracking") +
     '</div>';
 
@@ -66,6 +59,12 @@
     }
   }
 
+  document.getElementById("openSettings").addEventListener("click", function () {
+    chrome.runtime.openOptionsPage();
+  });
+
+  document.querySelector(".version").textContent = "v" + chrome.runtime.getManifest().version;
+
   function renderLifetimeStats(stats) {
     return '<div class="section-label" style="margin-top:12px">Lifetime Stats</div>' +
       '<div class="stats-grid">' +
@@ -79,17 +78,19 @@
   }
 
   function formatNum(n) {
+    if (typeof n === "string") return n;
     if (n >= 1000000) return (n / 1000000).toFixed(1) + "M";
     if (n >= 1000) return (n / 1000).toFixed(1) + "K";
     return String(n);
   }
 
-  function formatState(state) {
-    switch (state) {
-      case "IDLE": return "Idle";
-      case "SUBSTITUTING": return "Substituting";
-      default: return state || "Idle";
-    }
+  function formatTime(ms) {
+    var s = Math.floor(ms / 1000);
+    if (s < 60) return s + "s";
+    var m = Math.floor(s / 60);
+    if (m < 60) return m + "m";
+    var h = Math.floor(m / 60);
+    return h + "h " + (m % 60) + "m";
   }
 
   function escapeHtml(str) {

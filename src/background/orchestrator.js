@@ -9,6 +9,7 @@ const Orchestrator = {
     bufferingFix: true,
     visibilitySpoofing: true,
     autoClaimPoints: true,
+    showNotifications: true,
   },
 
   init() {

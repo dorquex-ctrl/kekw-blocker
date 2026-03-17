@@ -17,6 +17,7 @@
   var _isBlockingAds = false;
   var _preAdQuality = null;
   var _lsCachedValues = null;
+  var _showNotifications = true;
 
   // --- Options (shared between main thread and worker via toString injection)
 
@@ -155,6 +156,20 @@
             if (e.data.key == "PauseResumePlayer") doTwitchPlayerTask(true, false);
             else doTwitchPlayerTask(false, true);
           }
+          else if (e.data.key == "SeekToLive") {
+            // Soft post-ad recovery: seek to live edge instead of full reload
+            if (e.data.channelName) {
+              var currentPath = window.location.pathname.split("/")[1];
+              if (currentPath && currentPath.toLowerCase() !== e.data.channelName.toLowerCase()) return;
+            }
+            var ps = getPlayerAndState();
+            if (ps && ps.player) {
+              if (!seekToLiveEdge(ps.player)) {
+                // Fallback to pause/resume if no buffered data
+                doTwitchPlayerTask(true, false);
+              }
+            }
+          }
           else if (e.data.key == "StreamInitialized") {
             _isBlockingAds = false;
             _preAdQuality = null;
@@ -166,7 +181,7 @@
               if (_lsCachedValues) _preAdQuality = _lsCachedValues.get("video-quality");
             }
             if (e.data.hasAds) {
-              showTtvNotification("KEKW Blocker: Blocking ads — stream quality may be temporarily reduced");
+              showTtvNotification("KEKW Blocker: Ads blocked");
             } else if (!e.data.hasAds && _isBlockingAds) {
               // Restore pre-ad quality
               if (_preAdQuality && _lsCachedValues) {
@@ -277,6 +292,7 @@
                     ResolutionList: [],
                     BackupEncodingsM3U8Cache: Object.create(null),
                     ActiveBackupPlayerType: null,
+                    LastSuccessfulPlayerType: null,
                     IsMidroll: false,
                     IsStrippingAdSegments: false,
                     NumStrippedAdSegments: 0
@@ -492,9 +508,18 @@
       }
 
       // Try backup player types for ad-free stream
+      // Build the try order: last-successful type first, then the rest
       var backupPlayerType = null;
       var backupM3u8 = null;
       var fallbackM3u8 = null;
+      var tryOrder = BackupPlayerTypes.slice();
+      if (streamInfo.LastSuccessfulPlayerType) {
+        var lsIdx = tryOrder.indexOf(streamInfo.LastSuccessfulPlayerType);
+        if (lsIdx > 0) {
+          tryOrder.splice(lsIdx, 1);
+          tryOrder.unshift(streamInfo.LastSuccessfulPlayerType);
+        }
+      }
       var startIndex = 0;
       var isDoingMinimalRequests = false;
       if (streamInfo.LastPlayerReload > Date.now() - PlayerReloadMinimalRequestsTime) {
@@ -502,47 +527,50 @@
         isDoingMinimalRequests = true;
       }
 
-      for (var playerTypeIndex = startIndex; !backupM3u8 && playerTypeIndex < BackupPlayerTypes.length; playerTypeIndex++) {
-        var playerType = BackupPlayerTypes[playerTypeIndex];
+      // Fetch all backup player types in parallel for minimum latency
+      var candidates = tryOrder.slice(startIndex);
+      var fetchPromises = candidates.map(function (playerType) {
         var realPlayerType = playerType.replace("-CACHED", "");
-        for (var attempt = 0; attempt < 2; attempt++) {
-          var isFreshM3u8 = false;
-          var encodingsM3u8 = streamInfo.BackupEncodingsM3U8Cache[playerType];
-          if (!encodingsM3u8) {
-            isFreshM3u8 = true;
-            try {
-              var accessTokenResponse = await getAccessToken(streamInfo.ChannelName, realPlayerType);
-              if (accessTokenResponse.status === 200) {
-                var accessToken = await accessTokenResponse.json();
-                var urlInfo = new URL("https://usher.ttvnw.net/api/" + (V2API ? "v2/" : "") + "channel/hls/" + streamInfo.ChannelName + ".m3u8" + streamInfo.UsherParams);
-                urlInfo.searchParams.set("sig", accessToken.data.streamPlaybackAccessToken.signature);
-                urlInfo.searchParams.set("token", accessToken.data.streamPlaybackAccessToken.value);
-                var encodingsM3u8Response = await realFetch(urlInfo.href);
-                if (encodingsM3u8Response.status === 200) {
-                  encodingsM3u8 = streamInfo.BackupEncodingsM3U8Cache[playerType] = await encodingsM3u8Response.text();
-                }
-              }
-            } catch (err) {}
-          }
-          if (encodingsM3u8) {
-            try {
-              var streamM3u8Url = getStreamUrlForResolution(encodingsM3u8, currentResolution);
-              var streamM3u8Response = await realFetch(streamM3u8Url);
-              if (streamM3u8Response.status == 200) {
-                var m3u8Text = await streamM3u8Response.text();
-                if (m3u8Text) {
-                  if (playerType == FallbackPlayerType) fallbackM3u8 = m3u8Text;
-                  if (!m3u8Text.includes(AdSignifier) || (!fallbackM3u8 && playerTypeIndex >= BackupPlayerTypes.length - 1)) {
-                    backupPlayerType = playerType;
-                    backupM3u8 = m3u8Text;
-                    break;
-                  }
-                }
-              }
-            } catch (err) {}
-          }
+        var encodingsM3u8 = streamInfo.BackupEncodingsM3U8Cache[playerType];
+        var fetcher;
+        if (encodingsM3u8) {
+          fetcher = Promise.resolve(encodingsM3u8);
+        } else {
+          fetcher = getAccessToken(streamInfo.ChannelName, realPlayerType).then(function (resp) {
+            if (resp.status !== 200) return null;
+            return resp.json().then(function (token) {
+              var urlInfo = new URL("https://usher.ttvnw.net/api/" + (V2API ? "v2/" : "") + "channel/hls/" + streamInfo.ChannelName + ".m3u8" + streamInfo.UsherParams);
+              urlInfo.searchParams.set("sig", token.data.streamPlaybackAccessToken.signature);
+              urlInfo.searchParams.set("token", token.data.streamPlaybackAccessToken.value);
+              return realFetch(urlInfo.href).then(function (r) { return r.status === 200 ? r.text() : null; });
+            });
+          })["catch"](function () { return null; });
+        }
+        return fetcher.then(function (enc) {
           streamInfo.BackupEncodingsM3U8Cache[playerType] = null;
-          if (isFreshM3u8) break;
+          if (!enc) return null;
+          var m3u8Url = getStreamUrlForResolution(enc, currentResolution);
+          return realFetch(m3u8Url).then(function (r) {
+            return r.status === 200 ? r.text() : null;
+          }).then(function (m3u8Text) {
+            if (!m3u8Text) return null;
+            return { playerType: playerType, m3u8: m3u8Text, hasAds: m3u8Text.includes(AdSignifier) };
+          });
+        })["catch"](function () { return null; });
+      });
+      var results = await Promise.allSettled(fetchPromises);
+      // Pick first ad-free result in priority order; fall back to fallback type
+      for (var ri = 0; ri < results.length; ri++) {
+        var r = results[ri].value;
+        if (!r) continue;
+        if (r.playerType === FallbackPlayerType) fallbackM3u8 = r.m3u8;
+        if (!r.hasAds) { backupPlayerType = r.playerType; backupM3u8 = r.m3u8; break; }
+      }
+      if (!backupM3u8 && !fallbackM3u8) {
+        // Last resort: accept the last result even with ads
+        for (var ri2 = results.length - 1; ri2 >= 0; ri2--) {
+          var r2 = results[ri2].value;
+          if (r2) { fallbackM3u8 = r2.m3u8; break; }
         }
       }
 
@@ -555,6 +583,7 @@
         textStr = backupM3u8;
         if (streamInfo.ActiveBackupPlayerType != backupPlayerType) {
           streamInfo.ActiveBackupPlayerType = backupPlayerType;
+          streamInfo.LastSuccessfulPlayerType = backupPlayerType;
           console.log("[TTV Worker] Blocking" + (streamInfo.IsMidroll ? " midroll " : " ") + "ads (" + backupPlayerType + ")");
         }
       }
@@ -570,10 +599,14 @@
       streamInfo.NumStrippedAdSegments = 0;
       streamInfo.ActiveBackupPlayerType = null;
       streamInfo.RequestedAds.clear();
-      if (streamInfo.IsUsingModifiedM3U8 || ReloadPlayerAfterAd) {
+      if (streamInfo.IsUsingModifiedM3U8) {
+        // HEVC swap requires full reload
         streamInfo.IsUsingModifiedM3U8 = false;
         streamInfo.LastPlayerReload = Date.now();
         postMessage({ key: "ReloadPlayer", channelName: streamInfo.ChannelName });
+      } else if (ReloadPlayerAfterAd) {
+        // Seek to live edge for clean transition (avoids black screen)
+        postMessage({ key: "SeekToLive", channelName: streamInfo.ChannelName });
       } else {
         postMessage({ key: "PauseResumePlayer", channelName: streamInfo.ChannelName });
       }
@@ -719,22 +752,28 @@
   // one media playlist fetch instead of 3 serial requests.
 
   var _preWarmTimers = Object.create(null);
-  var _PRE_WARM_REFRESH_MS = 4 * 60 * 1000;
+  var _PRE_WARM_AGGRESSIVE_MS = 2 * 60 * 1000;   // First 5 min: every 2 min (pre-rolls common)
+  var _PRE_WARM_LAZY_MS = 10 * 60 * 1000;         // After: every 10 min
+  var _PRE_WARM_AGGRESSIVE_WINDOW = 5 * 60 * 1000; // 5 min window
 
   function preWarmBackupStreams(channelName, usherParams, v2api, workerRef) {
     if (!channelName || !usherParams) return;
 
     // Clear any existing timers (including old channels)
+    function clearPreWarmTimer(t) {
+      if (!t) return;
+      clearTimeout(t.initial);
+      clearInterval(t.interval);
+      if (t.switchTimer) clearTimeout(t.switchTimer);
+    }
     for (var key in _preWarmTimers) {
       if (key !== channelName) {
-        clearTimeout(_preWarmTimers[key].initial);
-        clearInterval(_preWarmTimers[key].interval);
+        clearPreWarmTimer(_preWarmTimers[key]);
         delete _preWarmTimers[key];
       }
     }
     if (_preWarmTimers[channelName]) {
-      clearTimeout(_preWarmTimers[channelName].initial);
-      clearInterval(_preWarmTimers[channelName].interval);
+      clearPreWarmTimer(_preWarmTimers[channelName]);
     }
 
     var fetchFn = _realFetch || window.fetch;
@@ -765,14 +804,13 @@
     function doPreWarm() {
       // Stop if the worker was terminated or replaced
       if (twitchWorkers.indexOf(workerRef) === -1) {
-        if (_preWarmTimers[channelName]) {
-          clearTimeout(_preWarmTimers[channelName].initial);
-          clearInterval(_preWarmTimers[channelName].interval);
-        }
+        clearPreWarmTimer(_preWarmTimers[channelName]);
         delete _preWarmTimers[channelName];
         return;
       }
-      for (var i = 0; i < BackupPlayerTypes.length; i++) {
+      // Pre-warm only the first 2 player types to reduce network overhead
+      var preWarmCount = Math.min(2, BackupPlayerTypes.length);
+      for (var i = 0; i < preWarmCount; i++) {
         (function (playerType) {
           var realPlayerType = playerType.replace("-CACHED", "");
           makeGqlRequest(realPlayerType).then(function (response) {
@@ -802,9 +840,16 @@
     }
 
     var initialId = setTimeout(doPreWarm, 3000 + Math.random() * 2000);
-    var jitter = Math.floor(Math.random() * 60000);
-    var intervalId = setInterval(doPreWarm, _PRE_WARM_REFRESH_MS + jitter);
-    _preWarmTimers[channelName] = { initial: initialId, interval: intervalId };
+    // Aggressive first 5 min (pre-rolls common), then lazy
+    var aggressiveId = setInterval(doPreWarm, _PRE_WARM_AGGRESSIVE_MS);
+    var switchId = setTimeout(function () {
+      // Bail if this timer set was replaced by a newer call
+      if (!_preWarmTimers[channelName] || _preWarmTimers[channelName].switchTimer !== switchId) return;
+      clearInterval(aggressiveId);
+      var lazyId = setInterval(doPreWarm, _PRE_WARM_LAZY_MS + Math.floor(Math.random() * 60000));
+      _preWarmTimers[channelName].interval = lazyId;
+    }, _PRE_WARM_AGGRESSIVE_WINDOW);
+    _preWarmTimers[channelName] = { initial: initialId, interval: aggressiveId, switchTimer: switchId };
   }
 
   // --- Main thread: hook fetch for auth capture + playerType forcing
@@ -966,6 +1011,7 @@
         }
       } catch (e) {}
       console.log("[TTV] Reloading Twitch player");
+      _notifSuppressUntil = Date.now() + 3000; // Suppress cascading notifications for 3s
       try {
         ps.state.setSrc({ isNewMediaPlayerInstance: true, refreshAccessToken: true });
         postTwitchWorkerMessage("TriggeredPlayerReload");
@@ -1002,8 +1048,11 @@
   // --- User notification banner
 
   var _notifTimeout = null;
+  var _notifSuppressUntil = 0;
 
   function showTtvNotification(message) {
+    if (!_showNotifications) return;
+    if (Date.now() < _notifSuppressUntil) return;
     var existing = document.getElementById("ttv-kekw-notif");
 
     // If the same message is already showing, just reset the dismiss timer
@@ -1346,7 +1395,9 @@
     }
     if (opts.visibilitySpoofing !== undefined) {
       _visibilitySpoofingEnabled = !!opts.visibilitySpoofing;
-      console.log("[TTV] Option: VisibilitySpoofing = " + _visibilitySpoofingEnabled);
+    }
+    if (opts.showNotifications !== undefined) {
+      _showNotifications = !!opts.showNotifications;
     }
   });
 
@@ -1382,5 +1433,5 @@
     }
   });
 
-  console.log("[TTV] KEKW Blocker v1.0 active");
+  console.log("[TTV] KEKW Blocker active");
 })();

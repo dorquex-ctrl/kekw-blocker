@@ -1,6 +1,7 @@
 // Runs at document_start — hooks Worker and fetch before Twitch's scripts load.
 (function () {
   "use strict";
+  if (window !== window.top) return; // Only run in the top frame
 
   // Nonce for event authentication between content scripts and page-inject
   var nonce = Math.random().toString(36).substring(2);
