@@ -116,7 +116,7 @@ function createArchive(archivePath) {
       : archivePath;
     if (zipArchivePath !== archivePath && fs.existsSync(zipArchivePath)) fs.unlinkSync(zipArchivePath);
     execSync(
-      `powershell -NoProfile -Command "Compress-Archive -Path '${DIST}\\*' -DestinationPath '${zipArchivePath}'"`,
+      `powershell -NoProfile -Command "Set-Location '${DIST}'; tar -a -c -f '${zipArchivePath}' *"`,
       { stdio: 'inherit' }
     );
     if (zipArchivePath !== archivePath) fs.renameSync(zipArchivePath, archivePath);

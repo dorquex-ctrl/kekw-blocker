@@ -48,7 +48,7 @@ function createZip(sourceDir, archivePath) {
   if (fs.existsSync(archivePath)) fs.unlinkSync(archivePath);
   if (process.platform === 'win32') {
     execSync(
-      `powershell -NoProfile -Command "Compress-Archive -Path '${sourceDir}\\*' -DestinationPath '${archivePath}'"`,
+      `powershell -NoProfile -Command "Set-Location '${sourceDir}'; tar -a -c -f '${archivePath}' *"`,
       { stdio: 'inherit' }
     );
     return;
