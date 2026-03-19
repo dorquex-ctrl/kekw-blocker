@@ -1,13 +1,40 @@
 {
-  "_version": 2,
-  "_lastChecked": "2026-03-16T04:16:57.440Z",
-  "_note": "Auto-updated by scripts/extract-config.js. Extension fetches this at runtime.",
-  "playbackAccessTokenHash": "ed230aa1e33e07eebb8928504583da78a5173989fadfb1ac94be06a04f3cdbe9",
-  "clientId": "b31o4btkqth5bzbvr9ub2ovr79umhh",
-  "blockedOperations": [
-    "RunMidroll",
-    "RunMidrollAd",
-    "RunCommercial"
-  ],
-  "_lastUpdateSource": "regex-extraction"
+  "_schema": 2,
+  "_version": 4,
+  "_generatedAt": "2026-03-18T21:33:43.598Z",
+  "gql": {
+    "clientId": {
+      "active": {
+        "value": "b31o4btkqth5bzbvr9ub2ovr79umhh",
+        "validatedAt": "2026-03-16T04:16:57.440Z",
+        "source": "regex",
+        "confidence": "high"
+      },
+      "fallbacks": []
+    },
+    "playbackAccessToken": {
+      "hash": {
+        "active": {
+          "value": "ed230aa1e33e07eebb8928504583da78a5173989fadfb1ac94be06a04f3cdbe9",
+          "validatedAt": "2026-03-16T04:16:57.440Z",
+          "source": "regex",
+          "confidence": "high"
+        },
+        "fallbacks": []
+      },
+      "query": {
+        "active": {
+          "value": "query PlaybackAccessToken($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!) { streamPlaybackAccessToken(channelName: $login, params: {platform: \"web\", playerBackend: \"mediaplayer\", playerType: $playerType}) @include(if: $isLive) { value signature __typename } videoPlaybackAccessToken(id: $vodID, params: {platform: \"web\", playerBackend: \"mediaplayer\", playerType: $playerType}) @include(if: $isVod) { value signature __typename } }",
+          "validatedAt": "2026-03-18T21:33:43.598Z",
+          "source": "ast",
+          "confidence": "high"
+        }
+      }
+    }
+  },
+  "signature": {
+    "alg": "ed25519",
+    "keyId": "k1",
+    "value": "ZZL8cd3PtASPPHmXuzyfsmM6xCnwYl+kyjJzyU3bvNYh50uQL/rVsEUh3KzDoeoguxPniAceZ771Io2ETWFMCQ=="
+  }
 }
