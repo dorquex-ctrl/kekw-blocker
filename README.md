@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="https://ko-fi.com/dorquex"><img src="https://img.shields.io/badge/Support-Ko--fi-ff5e5b?logo=ko-fi&logoColor=white" alt="Ko-fi"></a>
-  <img src="https://img.shields.io/badge/version-1.1.0-bf94ff" alt="Version">
+  <img src="https://img.shields.io/badge/version-1.1.1-bf94ff" alt="Version">
   <img src="https://img.shields.io/badge/manifest-v2-333" alt="Manifest V2">
   <img src="https://img.shields.io/badge/firefox%20%7C%20chromium-supported-green" alt="Browsers">
 </p>
