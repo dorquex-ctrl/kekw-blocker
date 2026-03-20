@@ -160,9 +160,7 @@ function promoteEntry(entry, candidateRecord, maxFallbacks, validator) {
     return { entry: normalizedEntry, changed: false };
   }
   if (normalizedEntry.active && normalizedEntry.active.value === candidate.value) {
-    const changed = stableStringify(normalizedEntry.active) !== stableStringify(candidate);
-    normalizedEntry.active = candidate;
-    return { entry: normalizedEntry, changed: changed };
+    return { entry: normalizedEntry, changed: false };
   }
 
   const nextFallbacks = [];
@@ -212,7 +210,7 @@ function applyCandidates(currentConfig, candidates, bundledQuery) {
   const normalizedQuery = normalizeValueRecord(candidates && candidates.playbackAccessTokenQuery, isValidQuery);
   if (normalizedQuery) {
     const currentQuery = nextConfig.gql.playbackAccessToken.query.active;
-    if (!currentQuery || currentQuery.value !== normalizedQuery.value || stableStringify(currentQuery) !== stableStringify(normalizedQuery)) {
+    if (!currentQuery || currentQuery.value !== normalizedQuery.value) {
       nextConfig.gql.playbackAccessToken.query.active = normalizedQuery;
       changed = true;
     }

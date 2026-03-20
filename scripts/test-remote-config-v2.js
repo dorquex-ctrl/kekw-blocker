@@ -28,6 +28,49 @@ function main() {
   assert.equal(normalized.gql.playbackAccessToken.hash.active.value, legacyConfig.playbackAccessTokenHash);
   assert.equal(normalized.gql.playbackAccessToken.query.active.value, bundledQuery);
 
+  const stableConfig = {
+    _schema: 2,
+    _version: 6,
+    _generatedAt: "2026-03-19T03:55:24.464Z",
+    gql: {
+      clientId: {
+        active: {
+          value: legacyConfig.clientId,
+          validatedAt: "2026-03-19T03:55:24.318Z",
+          source: "regex",
+          confidence: "high"
+        },
+        fallbacks: []
+      },
+      playbackAccessToken: {
+        hash: {
+          active: {
+            value: legacyConfig.playbackAccessTokenHash,
+            validatedAt: "2026-03-16T04:16:57.440Z",
+            source: "regex",
+            confidence: "high"
+          },
+          fallbacks: []
+        },
+        query: {
+          active: {
+            value: bundledQuery,
+            validatedAt: "2026-03-19T03:55:24.464Z",
+            source: "ast",
+            confidence: "high"
+          }
+        }
+      }
+    }
+  };
+  const metadataOnly = applyCandidates(stableConfig, {
+    clientId: createValueRecord(legacyConfig.clientId, "regex", "high", "2026-03-20T00:00:00.000Z"),
+    playbackAccessTokenHash: createValueRecord(legacyConfig.playbackAccessTokenHash, "regex", "high", "2026-03-20T00:00:00.000Z"),
+    playbackAccessTokenQuery: createValueRecord(bundledQuery, "ast", "high", "2026-03-20T00:00:00.000Z")
+  }, bundledQuery);
+  assert.equal(metadataOnly.changed, false);
+  assert.deepEqual(metadataOnly.config, stableConfig);
+
   const applied = applyCandidates(legacyConfig, {
     clientId: createValueRecord("kimne78kx3ncx6brgo4mv6wki5h1ko", "ai", "medium", "2026-03-18T00:00:00.000Z"),
     playbackAccessTokenHash: createValueRecord("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef", "ai", "medium", "2026-03-18T00:00:00.000Z"),
