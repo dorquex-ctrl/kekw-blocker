@@ -57,12 +57,17 @@ This extension is **Manifest V2**. Use it as an **unpacked Developer Mode** exte
 
 ### Firefox
 
+Install from Firefox Add-ons:
+
+- [KEKW Blocker on Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/kekw-blocker/)
+
+For local development and testing:
+
 1. Run `npm run build:firefox` to generate the Firefox dev build
 2. Open `about:debugging#/runtime/this-firefox`
 3. Click **Load Temporary Add-on** and select `dist/firefox/manifest.json`
 
 Firefox temporary add-ons are unloaded when the browser restarts, so you need to load it again after each restart unless you package/sign it separately.
-Firefox Add-ons (AMO) listing: pending.
 
 ---
 

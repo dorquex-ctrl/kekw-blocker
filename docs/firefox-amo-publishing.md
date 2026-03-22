@@ -9,6 +9,10 @@
 - `npm run package:firefox:amo`
   Creates the AMO submission `.xpi`
 
+## Live Listing
+
+- Firefox Add-ons: https://addons.mozilla.org/en-US/firefox/addon/kekw-blocker/
+
 ## Why There Are Two Firefox Manifests
 
 `manifest.firefox.json` remains the dev/debug manifest so temporary installs continue to work with the broader local testing setup.
@@ -20,7 +24,7 @@
 
 This avoids weakening the AMO package requirements just to preserve older local dev installs.
 
-## Recommended Submission Checklist
+## Recommended Submission / Update Checklist
 
 1. Run `npm ci`
 2. Run `npm run build:firefox:amo`
@@ -39,9 +43,9 @@ This avoids weakening the AMO package requirements just to preserve older local 
 - remote configuration is treated as signed data, not remote code
 - AMO-targeted Firefox builds disclose data access more conservatively than the dev build
 
-## Manual Listing Assets Still Needed
+## Portal-Managed Listing Metadata
 
-These are not generated from the repo automatically and should still be prepared in the AMO developer portal:
+These are not generated from the repo automatically and should be maintained in the AMO developer portal:
 
 - listing summary
 - full listing description

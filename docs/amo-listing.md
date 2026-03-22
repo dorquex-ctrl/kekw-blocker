@@ -1,10 +1,14 @@
-# AMO Listing Draft
+# AMO Listing Copy
 
-## Suggested Summary
+Live listing:
+
+- https://addons.mozilla.org/en-US/firefox/addon/kekw-blocker/
+
+## Current Summary
 
 Twitch ad blocker with self-healing config and playback recovery.
 
-## Suggested Description
+## Current Description
 
 KEKW Blocker is a Twitch-focused ad blocker for Firefox.
 
@@ -22,7 +26,7 @@ Key features:
 
 This extension is intended only for Twitch pages and related Twitch media endpoints.
 
-## Suggested Support / Notes
+## Support / Notes
 
 - Support page: repository issues or project homepage
 - Privacy policy: use the contents of `PRIVACY.md` or host that file at a stable public URL
@@ -35,7 +39,7 @@ KEKW Blocker needs access to Twitch pages and Twitch media requests so it can de
 
 The extension does not send analytics, telemetry, or advertising data to the developer.
 
-## Suggested Categories / Keywords
+## Categories / Keywords
 
 Categories:
 
@@ -50,11 +54,11 @@ Keywords:
 - video
 - privacy
 
-## Listing Assets Still Needed
+## Portal-Managed Listing Metadata
 
-These still need to be prepared manually in the AMO portal:
+These are maintained manually in the AMO portal rather than generated from this file:
 
 - screenshots
 - support URL or support email
-- public privacy-policy URL, if you do not want to paste policy text manually
+- privacy-policy URL or pasted privacy-policy content
 - final short summary and long description review
