@@ -1,7 +1,7 @@
 {
   "_schema": 2,
-  "_version": 13,
-  "_generatedAt": "2026-03-20T18:57:29.457Z",
+  "_version": 14,
+  "_generatedAt": "2026-03-25T07:09:36.295Z",
   "gql": {
     "clientId": {
       "active": {
@@ -15,12 +15,19 @@
     "playbackAccessToken": {
       "hash": {
         "active": {
-          "value": "ed230aa1e33e07eebb8928504583da78a5173989fadfb1ac94be06a04f3cdbe9",
-          "validatedAt": "2026-03-16T04:16:57.440Z",
-          "source": "regex",
-          "confidence": "high"
+          "value": "b5b61e7a8883e0a4b8b83b9cacd53e012bf059b5ddf20a52d769e7d21a1cdf48",
+          "validatedAt": "2026-03-25T07:09:36.190Z",
+          "source": "ast",
+          "confidence": "medium"
         },
-        "fallbacks": []
+        "fallbacks": [
+          {
+            "value": "ed230aa1e33e07eebb8928504583da78a5173989fadfb1ac94be06a04f3cdbe9",
+            "validatedAt": "2026-03-16T04:16:57.440Z",
+            "source": "regex",
+            "confidence": "high"
+          }
+        ]
       },
       "query": {
         "active": {
@@ -35,6 +42,6 @@
   "signature": {
     "alg": "ed25519",
     "keyId": "k1",
-    "value": "ziDr8KPjgbJd4+QHbhqPUOCc/7MGtg6dcYlE6DCtPzQbRIL/Wam+kS8p3UxxDqF2cldSwHmYLglCO0wJJN0cBg=="
+    "value": "Ef16sJdW3VUM1bDA2TGt9utqSFSCPwPURgIMtynsirEMO4l11eL0+T/usXoiH+g020Vuij0R2U3wlZLIzhrJAg=="
   }
 }
