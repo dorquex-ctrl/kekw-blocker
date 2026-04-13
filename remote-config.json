@@ -1,7 +1,7 @@
 {
   "_schema": 2,
-  "_version": 68,
-  "_generatedAt": "2026-04-12T13:12:20.323Z",
+  "_version": 69,
+  "_generatedAt": "2026-04-13T08:12:32.256Z",
   "gql": {
     "clientId": {
       "active": {
@@ -31,9 +31,9 @@
       },
       "query": {
         "active": {
-          "value": "query PlaybackAccessToken($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!, $platform: String!) {\n  streamPlaybackAccessToken(\n    channelName: $login\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isLive) {\n    value\n    signature\n    authorization {\n      isForbidden\n      forbiddenReasonCode\n    }\n  }\n  videoPlaybackAccessToken(\n    id: $vodID\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isVod) {\n    value\n    signature\n  }\n}\n",
-          "validatedAt": "2026-04-12T13:12:20.323Z",
-          "source": "ast",
+          "value": "query PlaybackAccessToken($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!, $platform: String!) {\n  streamPlaybackAccessToken(\n    channelName: $login\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isLive) {\n    value\n    signature\n    authorization {\n      isForbidden\n      forbiddenReasonCode\n    }\n  }\n  videoPlaybackAccessToken(\n    id: $vodID\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isVod) {\n    value\n    signature\n  }\n}",
+          "validatedAt": "2026-04-13T08:12:32.256Z",
+          "source": "ai",
           "confidence": "high"
         }
       }
@@ -42,6 +42,6 @@
   "signature": {
     "alg": "ed25519",
     "keyId": "k1",
-    "value": "2MioopRxgc2bEbix6BrooAkMAF2uQjVinFqV97x/g9g1BS29baW6cOSkULEIbYuC7ikofBUUO4wnb3+XrlxQCw=="
+    "value": "RzPe7xPw90jFKliOeppezs6I5my8B9Y+MnZ1aBpQ81OlEXpivzlO2MgCmZpZ/CW5VSlabMxWSj7fWuZhsw51AA=="
   }
 }
