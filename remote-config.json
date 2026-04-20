@@ -1,7 +1,7 @@
 {
   "_schema": 2,
-  "_version": 107,
-  "_generatedAt": "2026-04-20T13:55:05.494Z",
+  "_version": 108,
+  "_generatedAt": "2026-04-20T19:14:00.160Z",
   "gql": {
     "clientId": {
       "active": {
@@ -31,9 +31,9 @@
       },
       "query": {
         "active": {
-          "value": "query PlaybackAccessToken($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!, $platform: String!) {\n  streamPlaybackAccessToken(\n    channelName: $login\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isLive) {\n    value\n    signature\n    authorization {\n      isForbidden\n      forbiddenReasonCode\n    }\n  }\n  videoPlaybackAccessToken(\n    id: $vodID\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isVod) {\n    value\n    signature\n  }\n}",
-          "validatedAt": "2026-04-20T13:55:05.494Z",
-          "source": "ai",
+          "value": "query PlaybackAccessToken($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!, $platform: String!) {\n  streamPlaybackAccessToken(\n    channelName: $login\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isLive) {\n    value\n    signature\n    authorization {\n      isForbidden\n      forbiddenReasonCode\n    }\n  }\n  videoPlaybackAccessToken(\n    id: $vodID\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isVod) {\n    value\n    signature\n  }\n}\n",
+          "validatedAt": "2026-04-20T19:14:00.160Z",
+          "source": "ast",
           "confidence": "high"
         }
       }
@@ -42,6 +42,6 @@
   "signature": {
     "alg": "ed25519",
     "keyId": "k1",
-    "value": "Vq7GpAktXNd/hRkh/uPu9mULpyrb8+0prK0PnJA6fPKa8lO4ImfSdCRvM62J7QSVPNU4suH/bp1bJW9BZAOUBQ=="
+    "value": "Xr7Z01S1S0vo+OtUL1if9nb0BrIyaRj00/BMRwep5Rc6wF6vPhUAaaJcOtLvctelbqIM/UUlmmD1TfnMk8p4Cg=="
   }
 }
