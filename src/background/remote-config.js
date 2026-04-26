@@ -339,6 +339,8 @@ const RemoteConfig = {
         chrome.tabs.sendMessage(tabs[i].id, {
           type: "REMOTE_CONFIG_UPDATED",
           config: config
+        }).catch(() => {
+          // Silence "Could not establish connection" errors for tabs not yet ready
         });
       }
     });
