@@ -1,7 +1,7 @@
 {
   "_schema": 2,
-  "_version": 142,
-  "_generatedAt": "2026-04-27T03:35:33.254Z",
+  "_version": 143,
+  "_generatedAt": "2026-04-27T03:36:05.321Z",
   "gql": {
     "clientId": {
       "active": {
@@ -31,10 +31,10 @@
       },
       "query": {
         "active": {
-          "value": "query PlaybackAccessToken($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!, $platform: String!) {\n  streamPlaybackAccessToken(\n    channelName: $login\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isLive) {\n    value\n    signature\n    authorization {\n      isForbidden\n      forbiddenReasonCode\n    }\n  }\n  videoPlaybackAccessToken(\n    id: $vodID\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isVod) {\n    value\n    signature\n  }\n}\n",
-          "validatedAt": "2026-04-27T03:35:33.253Z",
-          "source": "ast",
-          "confidence": "high"
+          "value": "query PlaybackAccessToken($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!, $platform: String!) {\n  streamPlaybackAccessToken(\n    channelName: $login\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isLive) {\n    value\n    signature\n    authorization {\n      isForbidden\n      forbiddenReasonCode\n    }\n  }\n  videoPlaybackAccessToken(\n    id: $vodID\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isVod) {\n    value\n    signature\n  }\n}",
+          "validatedAt": "2026-04-27T03:36:05.320Z",
+          "source": "ai",
+          "confidence": "medium"
         }
       }
     }
@@ -42,6 +42,6 @@
   "signature": {
     "alg": "ed25519",
     "keyId": "k1",
-    "value": "PyGQKahADyU9P69GRAMyOfAcsrVKLosaXwvrFAPYhXm24RkV4QyIKdz1TaeNIX/+xuydGYjfy7jBeHiS5m/TBw=="
+    "value": "/ZNf8udGJNnLUoSXGlJhnvhXTOd8JzYqFA83yC/bFSpjj+PNKnhhtqTZVMoLXiyE7E5JVGJ+xJ0fzjA1pMuwBg=="
   }
 }
