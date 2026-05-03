@@ -209,10 +209,13 @@ const Orchestrator = {
   _broadcastOptions() {
     // Send to all Twitch tabs so content scripts + page-inject get updated
     chrome.tabs.query({ url: '*://*.twitch.tv/*' }, (tabs) => {
-      for (var i = 0; i < tabs.length; i++) {
-        chrome.tabs.sendMessage(tabs[i].id, {
+      for (let tab of tabs) {
+        chrome.tabs.sendMessage(tab.id, {
           type: 'OPTIONS_UPDATED',
           options: this._options
+        }).catch(() => {
+          // Silence "Could not establish connection" errors for tabs
+          // that haven't finished loading the content script yet.
         });
       }
     });
@@ -224,6 +227,8 @@ const Orchestrator = {
         chrome.tabs.sendMessage(tabs[i].id, {
           type: 'SET_ENABLED',
           enabled: this._enabled
+        }).catch(() => {
+          // Tab not ready yet
         });
       }
     });
@@ -235,18 +240,22 @@ const Orchestrator = {
   },
 
   _initTriggerBlocker() {
-    chrome.webRequest.onBeforeRequest.addListener(
-      (details) => {
-        if (!this._enabled || !this._options.blockTracking) return {};
-        Badge.recordBlock('tracking');
-        return { cancel: true };
-      },
-      {
-        urls: TTV_CONFIG.tracking.blockedUrlPatterns.slice()
-      },
-      ['blocking']
-    );
-    console.log('[TTV] Trigger/tracking URL blocker active');
+    const shouldBlock = this._enabled && this._options.blockTracking;
+    
+    // Toggle the DNR ruleset based on settings
+    chrome.declarativeNetRequest.updateEnabledRulesets({
+      [shouldBlock ? 'enableRulesetIds' : 'disableRulesetIds']: ['ruleset_1']
+    });
+
+    // Listen for rule matches to update the badge (replaces the old webRequest callback)
+    if (chrome.declarativeNetRequest.onRuleMatchedDebug) {
+      chrome.declarativeNetRequest.onRuleMatchedDebug.addListener((info) => {
+        if (info.rule.rulesetId === 'ruleset_1') {
+          Badge.recordBlock('tracking');
+        }
+      });
+    }
+    console.log(`[TTV] DNR Tracking blocker ${shouldBlock ? 'active' : 'disabled'}`);
   },
 
   _onMessage(message, sender, sendResponse) {
@@ -321,6 +330,7 @@ const Orchestrator = {
       case 'SET_ENABLED':
         this._enabled = !!message.enabled;
         console.log(`[TTV] Ad blocking ${this._enabled ? 'enabled' : 'disabled'}`);
+        this._initTriggerBlocker();
         chrome.storage.local.set({ ttvEnabled: this._enabled });
         this._broadcastEnabled();
         break;
@@ -371,6 +381,7 @@ const Orchestrator = {
         if (message.options) {
           Object.assign(this._options, message.options);
           console.log('[TTV] Options updated:', this._options);
+          this._initTriggerBlocker();
           this._broadcastOptions();
         }
         break;
