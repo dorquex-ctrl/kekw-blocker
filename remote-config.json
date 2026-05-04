@@ -1,7 +1,7 @@
 {
   "_schema": 2,
-  "_version": 180,
-  "_generatedAt": "2026-05-04T14:13:54.795Z",
+  "_version": 181,
+  "_generatedAt": "2026-05-04T19:47:48.746Z",
   "gql": {
     "clientId": {
       "active": {
@@ -15,12 +15,18 @@
     "playbackAccessToken": {
       "hash": {
         "active": {
-          "value": "b5b61e7a8883e0a4b8b83b9cacd53e012bf059b5ddf20a52d769e7d21a1cdf48",
-          "validatedAt": "2026-03-25T07:09:36.190Z",
-          "source": "ast",
-          "confidence": "medium"
+          "value": "eac67c891feeab53be7e7d6dba690cdd1696bc112054ea5ebe01864e05e05d7b",
+          "validatedAt": "2026-05-04T19:47:48.680Z",
+          "source": "ai-derived",
+          "confidence": "high"
         },
         "fallbacks": [
+          {
+            "value": "b5b61e7a8883e0a4b8b83b9cacd53e012bf059b5ddf20a52d769e7d21a1cdf48",
+            "validatedAt": "2026-03-25T07:09:36.190Z",
+            "source": "ast",
+            "confidence": "medium"
+          },
           {
             "value": "ed230aa1e33e07eebb8928504583da78a5173989fadfb1ac94be06a04f3cdbe9",
             "validatedAt": "2026-03-16T04:16:57.440Z",
@@ -31,9 +37,9 @@
       },
       "query": {
         "active": {
-          "value": "query PlaybackAccessToken($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!, $platform: String!) {\n  streamPlaybackAccessToken(\n    channelName: $login\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isLive) {\n    value\n    signature\n    authorization {\n      isForbidden\n      forbiddenReasonCode\n    }\n  }\n  videoPlaybackAccessToken(\n    id: $vodID\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isVod) {\n    value\n    signature\n  }\n}\n",
-          "validatedAt": "2026-05-04T14:13:54.795Z",
-          "source": "ast",
+          "value": "query PlaybackAccessToken($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!, $platform: String!) {\n  streamPlaybackAccessToken(\n    channelName: $login\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isLive) {\n    value\n    signature\n    authorization {\n      isForbidden\n      forbiddenReasonCode\n    }\n  }\n  videoPlaybackAccessToken(\n    id: $vodID\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isVod) {\n    value\n    signature\n  }\n}",
+          "validatedAt": "2026-05-04T19:47:48.746Z",
+          "source": "ai",
           "confidence": "high"
         }
       }
@@ -42,6 +48,6 @@
   "signature": {
     "alg": "ed25519",
     "keyId": "k1",
-    "value": "aAOG3Fcgwe4lOcpL+07yMwieueybKub2/t7udCCgV7VCy8gwyX0uEEAQno0p9xRHaZ7/o/FWDQ65frVNJdUuDg=="
+    "value": "kfQGj+aqrQvJDJjXOveE0dSDkxyYD2Noel1pCqXhWWfPekjcA6722SiR4Q2yLtgH7KNRB/A0uA3vpyw/xxZSCQ=="
   }
 }
