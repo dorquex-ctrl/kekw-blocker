@@ -1,7 +1,7 @@
 {
   "_schema": 2,
-  "_version": 206,
-  "_generatedAt": "2026-05-17T03:55:31.821Z",
+  "_version": 207,
+  "_generatedAt": "2026-05-17T08:26:36.489Z",
   "gql": {
     "clientId": {
       "active": {
@@ -15,17 +15,17 @@
     "playbackAccessToken": {
       "hash": {
         "active": {
-          "value": "eac67c891feeab53be7e7d6dba690cdd1696bc112054ea5ebe01864e05e05d7b",
-          "validatedAt": "2026-05-04T19:47:48.680Z",
-          "source": "ai-derived",
-          "confidence": "high"
+          "value": "b5b61e7a8883e0a4b8b83b9cacd53e012bf059b5ddf20a52d769e7d21a1cdf48",
+          "validatedAt": "2026-05-17T08:26:36.391Z",
+          "source": "ast",
+          "confidence": "medium"
         },
         "fallbacks": [
           {
-            "value": "b5b61e7a8883e0a4b8b83b9cacd53e012bf059b5ddf20a52d769e7d21a1cdf48",
-            "validatedAt": "2026-03-25T07:09:36.190Z",
-            "source": "ast",
-            "confidence": "medium"
+            "value": "eac67c891feeab53be7e7d6dba690cdd1696bc112054ea5ebe01864e05e05d7b",
+            "validatedAt": "2026-05-04T19:47:48.680Z",
+            "source": "ai-derived",
+            "confidence": "high"
           },
           {
             "value": "ed230aa1e33e07eebb8928504583da78a5173989fadfb1ac94be06a04f3cdbe9",
@@ -48,6 +48,6 @@
   "signature": {
     "alg": "ed25519",
     "keyId": "k1",
-    "value": "IXK95Xk8Oous0Egxi0YxJEHkss+hWOKD7/Cg0EnCm5EGQ4ZsA+6e0c2mOBjMIzAzW0p5yaTaQHvK2FgjwEGuAw=="
+    "value": "1xGtCFGH0QgClS+oAmryIZPPmhEJixbObv101i7wJJ9Fy+Tjnh4p2jxChPZLoyIU3QmYRvJn+Ui3aKrPWzxUCw=="
   }
 }
