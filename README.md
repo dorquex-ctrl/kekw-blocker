@@ -52,7 +52,7 @@ This extension is **Manifest V3**.
 1. Download or clone this repo [Download](https://github.com/vorzdesigns/kekw-blocker/archive/refs/heads/main.zip)
 2. Open your browser's extensions page (`chrome://extensions`, `brave://extensions`, `edge://extensions`, etc.)
 3. Enable **Developer mode** (toggle in top-right)
-4. Click **Load unpacked** and select the project folder
+4. Click **Load unpacked** and select the project folder (Extracted from zip)
 5. Navigate to any Twitch stream - ads are blocked immediately
 
 ### Firefox
