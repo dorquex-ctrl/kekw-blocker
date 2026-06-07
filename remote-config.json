@@ -1,7 +1,7 @@
 {
   "_schema": 2,
-  "_version": 279,
-  "_generatedAt": "2026-06-06T19:38:47.881Z",
+  "_version": 280,
+  "_generatedAt": "2026-06-07T04:23:36.896Z",
   "gql": {
     "clientId": {
       "active": {
@@ -37,9 +37,9 @@
       },
       "query": {
         "active": {
-          "value": "query PlaybackAccessToken($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!, $platform: String!) {\n  streamPlaybackAccessToken(\n    channelName: $login\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isLive) {\n    value\n    signature\n    authorization {\n      isForbidden\n      forbiddenReasonCode\n    }\n  }\n  videoPlaybackAccessToken(\n    id: $vodID\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isVod) {\n    value\n    signature\n  }\n}\n",
-          "validatedAt": "2026-06-06T19:38:47.880Z",
-          "source": "ast",
+          "value": "query PlaybackAccessToken($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!, $platform: String!) {\n  streamPlaybackAccessToken(\n    channelName: $login\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isLive) {\n    value\n    signature\n    authorization {\n      isForbidden\n      forbiddenReasonCode\n    }\n  }\n  videoPlaybackAccessToken(\n    id: $vodID\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isVod) {\n    value\n    signature\n  }\n}",
+          "validatedAt": "2026-06-07T04:23:36.895Z",
+          "source": "ai",
           "confidence": "high"
         }
       }
@@ -48,6 +48,6 @@
   "signature": {
     "alg": "ed25519",
     "keyId": "k1",
-    "value": "YqixLIcoaiB6umpxopO5AafU60fyQ/u75O3Ls42k/YSVVI2MM8uOSZ5M4M87akfkHyKvakmoNi0m9qIbcyriDg=="
+    "value": "Sa8XUXmixkDgsbvYqmVazJ1Ydy9FBpgrK2f3zpP+RDSoVGMBIUkwIT3+ajb8YffMVpiv52eB7k3IQB0T4PKKCw=="
   }
 }
