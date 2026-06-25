@@ -1,7 +1,7 @@
 {
   "_schema": 2,
-  "_version": 391,
-  "_generatedAt": "2026-06-25T09:31:32.018Z",
+  "_version": 392,
+  "_generatedAt": "2026-06-25T09:32:13.590Z",
   "gql": {
     "clientId": {
       "active": {
@@ -37,9 +37,9 @@
       },
       "query": {
         "active": {
-          "value": "query PlaybackAccessToken($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!, $platform: String!) {\n  streamPlaybackAccessToken(\n    channelName: $login\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isLive) {\n    value\n    signature\n    authorization {\n      isForbidden\n      forbiddenReasonCode\n    }\n  }\n  videoPlaybackAccessToken(\n    id: $vodID\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isVod) {\n    value\n    signature\n  }\n}\n",
-          "validatedAt": "2026-06-25T09:31:32.018Z",
-          "source": "ast",
+          "value": "query PlaybackAccessToken($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!, $platform: String!) {\n  streamPlaybackAccessToken(\n    channelName: $login\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isLive) {\n    value\n    signature\n    authorization {\n      isForbidden\n      forbiddenReasonCode\n    }\n  }\n  videoPlaybackAccessToken(\n    id: $vodID\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isVod) {\n    value\n    signature\n  }\n}",
+          "validatedAt": "2026-06-25T09:32:13.590Z",
+          "source": "ai",
           "confidence": "high"
         }
       }
@@ -48,6 +48,6 @@
   "signature": {
     "alg": "ed25519",
     "keyId": "k1",
-    "value": "Y5OMdaaU3g5ja9RaEl5d+BBzn0q9/f7fLBxhmflkEmYhwRo1CTP6zL8c+hfp0hBz65HxRHiKIH1wFzi0Bgf5Dw=="
+    "value": "Qi0Ai0cxvqmLymcdhAfSmVpkntkKgQ6SfV7DkCnv6/9r4yr4GMb9HMlnYb/Tjk5WzukgnXH3xYgiCcY+GotuDw=="
   }
 }
