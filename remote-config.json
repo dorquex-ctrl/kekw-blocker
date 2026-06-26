@@ -1,7 +1,7 @@
 {
   "_schema": 2,
-  "_version": 401,
-  "_generatedAt": "2026-06-26T14:34:18.951Z",
+  "_version": 402,
+  "_generatedAt": "2026-06-26T14:34:48.702Z",
   "gql": {
     "clientId": {
       "active": {
@@ -37,10 +37,10 @@
       },
       "query": {
         "active": {
-          "value": "query PlaybackAccessToken($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!, $platform: String!) {\n  streamPlaybackAccessToken(\n    channelName: $login\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isLive) {\n    value\n    signature\n    authorization {\n      isForbidden\n      forbiddenReasonCode\n    }\n  }\n  videoPlaybackAccessToken(\n    id: $vodID\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isVod) {\n    value\n    signature\n  }\n}\n",
-          "validatedAt": "2026-06-26T14:34:18.951Z",
-          "source": "ast",
-          "confidence": "high"
+          "value": "query PlaybackAccessToken($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!, $platform: String!) {\n  streamPlaybackAccessToken(\n    channelName: $login\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isLive) {\n    value\n    signature\n    authorization {\n      isForbidden\n      forbiddenReasonCode\n    }\n  }\n  videoPlaybackAccessToken(\n    id: $vodID\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isVod) {\n    value\n    signature\n  }\n}",
+          "validatedAt": "2026-06-26T14:34:48.701Z",
+          "source": "ai",
+          "confidence": "medium"
         }
       }
     }
@@ -48,6 +48,6 @@
   "signature": {
     "alg": "ed25519",
     "keyId": "k1",
-    "value": "yrrJoDFx/fh+JcaYJGjh1AEf4mOZ4kcuHjDNBLm11eXZDSRV/AKuQK1SzaFGqyDujgb1dqzWiLuXhLmExPzSAg=="
+    "value": "Ucz9BlHZ5Xpz7coHPofeF1/j4N5/vbJ9fykSdvom+8shvFwT7HNH2fusxqJ/X/sXpj8FZ0R7dq0L+pA4W+23Dg=="
   }
 }
