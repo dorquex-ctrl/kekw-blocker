@@ -1,7 +1,7 @@
 {
   "_schema": 2,
-  "_version": 441,
-  "_generatedAt": "2026-07-11T08:02:51.434Z",
+  "_version": 442,
+  "_generatedAt": "2026-07-11T08:03:26.145Z",
   "gql": {
     "clientId": {
       "active": {
@@ -37,10 +37,10 @@
       },
       "query": {
         "active": {
-          "value": "query PlaybackAccessToken($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!, $platform: String!) {\n  streamPlaybackAccessToken(\n    channelName: $login\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isLive) {\n    value\n    signature\n    authorization {\n      isForbidden\n      forbiddenReasonCode\n    }\n  }\n  videoPlaybackAccessToken(\n    id: $vodID\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isVod) {\n    value\n    signature\n  }\n}\n",
-          "validatedAt": "2026-07-11T08:02:51.433Z",
-          "source": "ast",
-          "confidence": "high"
+          "value": "query PlaybackAccessToken($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!, $platform: String!) {\n  streamPlaybackAccessToken(\n    channelName: $login\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isLive) {\n    value\n    signature\n    authorization {\n      isForbidden\n      forbiddenReasonCode\n    }\n  }\n  videoPlaybackAccessToken(\n    id: $vodID\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isVod) {\n    value\n    signature\n  }\n}",
+          "validatedAt": "2026-07-11T08:03:26.145Z",
+          "source": "ai",
+          "confidence": "medium"
         }
       }
     }
@@ -48,6 +48,6 @@
   "signature": {
     "alg": "ed25519",
     "keyId": "k1",
-    "value": "cYoLR4zArKojee43V1/gGoaCJyZmpvfTIV3JZ12EVmOvG2SPBgfIAT03cVLSgpqFbyV7NNSV9mRzjcMO9/VnBw=="
+    "value": "GVxCXYXO85IavvzUDfTDk9E+2RaKrbuk63y9yPDyme94HOSn+lMywnSG6uG9TeviUj6xIkiDUOePbOa+BeWJCA=="
   }
 }
