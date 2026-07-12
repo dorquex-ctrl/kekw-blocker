@@ -1,7 +1,7 @@
 {
   "_schema": 2,
-  "_version": 450,
-  "_generatedAt": "2026-07-12T08:24:22.709Z",
+  "_version": 452,
+  "_generatedAt": "2026-07-12T13:37:27.888Z",
   "gql": {
     "clientId": {
       "active": {
@@ -38,9 +38,9 @@
       "query": {
         "active": {
           "value": "query PlaybackAccessToken($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!, $platform: String!) {\n  streamPlaybackAccessToken(\n    channelName: $login\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isLive) {\n    value\n    signature\n    authorization {\n      isForbidden\n      forbiddenReasonCode\n    }\n  }\n  videoPlaybackAccessToken(\n    id: $vodID\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isVod) {\n    value\n    signature\n  }\n}",
-          "validatedAt": "2026-07-12T08:24:22.708Z",
+          "validatedAt": "2026-07-12T13:37:27.888Z",
           "source": "ai",
-          "confidence": "medium"
+          "confidence": "high"
         }
       }
     }
@@ -48,6 +48,6 @@
   "signature": {
     "alg": "ed25519",
     "keyId": "k1",
-    "value": "HkVrG8We8ROyP6kSq+tfgueM5jX+hblNyAa2GQxgGQ3gbbQVdSeByjPAIkGBP3qtr1eC3buB78ChP4xDcgA4Cg=="
+    "value": "l+EueF6uvLGmEZN9kfjnOQptWrQ4Zzmy3DEOdYfXJJm7twP/YdJPx4N4DrehLkr+OVS1+464fR17GFUgSXWWDQ=="
   }
 }
