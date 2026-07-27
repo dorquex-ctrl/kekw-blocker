@@ -1,7 +1,7 @@
 {
   "_schema": 2,
-  "_version": 542,
-  "_generatedAt": "2026-07-27T14:46:37.173Z",
+  "_version": 543,
+  "_generatedAt": "2026-07-27T19:41:19.213Z",
   "gql": {
     "clientId": {
       "active": {
@@ -37,9 +37,9 @@
       },
       "query": {
         "active": {
-          "value": "query PlaybackAccessToken($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!, $platform: String!) {\n  streamPlaybackAccessToken(\n    channelName: $login\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isLive) {\n    value\n    signature\n    authorization {\n      isForbidden\n      forbiddenReasonCode\n    }\n  }\n  videoPlaybackAccessToken(\n    id: $vodID\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isVod) {\n    value\n    signature\n  }\n}",
-          "validatedAt": "2026-07-27T14:46:37.173Z",
-          "source": "ai",
+          "value": "query PlaybackAccessToken($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!, $platform: String!) {\n  streamPlaybackAccessToken(\n    channelName: $login\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isLive) {\n    value\n    signature\n    authorization {\n      isForbidden\n      forbiddenReasonCode\n    }\n  }\n  videoPlaybackAccessToken(\n    id: $vodID\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isVod) {\n    value\n    signature\n  }\n}\n",
+          "validatedAt": "2026-07-27T19:41:19.212Z",
+          "source": "ast",
           "confidence": "high"
         }
       }
@@ -48,6 +48,6 @@
   "signature": {
     "alg": "ed25519",
     "keyId": "k1",
-    "value": "RRJ1SbxEs5/RmwHthPjH0v/IsKTSIFTJxq79hoEPNOm3KbiapwKgRpwhFBKQlEQ3NzR40H8JjvcfVC1IViEjDw=="
+    "value": "vWrPRPqkR3hN+eI3X0Lt9TEMoHN1vbId3Zu+WLXd2dLbjAGiOpjpb+UzWLOFP8AxOj5dGrU22Gvv4mb6XEXvCA=="
   }
 }
