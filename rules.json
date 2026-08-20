@@ -1,0 +1,59 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": {
+      "urlFilter": "||spade.twitch.tv",
+      "resourceTypes": ["xmlhttprequest", "other"]
+    }
+  },
+  {
+    "id": 2,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": {
+      "urlFilter": "||countess.twitch.tv",
+      "resourceTypes": ["xmlhttprequest", "other"]
+    }
+  },
+  {
+    "id": 3,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": {
+      "urlFilter": "||doubleclick.net",
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame", "image"]
+    }
+  },
+  {
+    "id": 4,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": {
+      "urlFilter": "||amazon-adsystem.com",
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame", "image"]
+    }
+  },
+  {
+    "id": 5,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": {
+      "urlFilter": "||imasdk.googleapis.com",
+      "resourceTypes": ["script", "xmlhttprequest"]
+    }
+  },
+  {
+    "id": 6,
+    "priority": 2,
+    "action": {
+      "type": "redirect",
+      "redirect": { "extensionPath": "/assets/blank.ts" }
+    },
+    "condition": {
+      "urlFilter": "/stitched-ad/",
+      "resourceTypes": ["xmlhttprequest", "other"]
+    }
+  }
+]
