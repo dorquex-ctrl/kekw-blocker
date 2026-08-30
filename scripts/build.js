@@ -39,6 +39,7 @@ const EXCLUDE_FILES = new Set([
   'manifest.firefox.json',
   'manifest.firefox.amo.json',
   'remote-config.json',
+  'rules.json',
   'README.md',
   'LICENSE',
   'SECURITY.md',
@@ -152,6 +153,12 @@ if (!fs.existsSync(manifestSrc)) {
 }
 
 copyFile(manifestSrc, path.join(DIST, 'manifest.json'));
+
+// Copy DNR rules for Manifest V3
+const rulesSrc = path.join(ROOT, 'rules.json');
+if (fs.existsSync(rulesSrc)) {
+  copyFile(rulesSrc, path.join(DIST, 'rules.json'));
+}
 
 const fileCount = countFiles(DIST);
 console.log(`Copied ${fileCount} files to dist/${target}/`);
