@@ -1,7 +1,7 @@
 {
   "_schema": 2,
-  "_version": 746,
-  "_generatedAt": "2026-09-02T16:18:36.496Z",
+  "_version": 747,
+  "_generatedAt": "2026-09-02T20:49:08.198Z",
   "gql": {
     "clientId": {
       "active": {
@@ -37,9 +37,9 @@
       },
       "query": {
         "active": {
-          "value": "query PlaybackAccessToken($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!, $platform: String!) {\n  streamPlaybackAccessToken(\n    channelName: $login\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isLive) {\n    value\n    signature\n    authorization {\n      isForbidden\n      forbiddenReasonCode\n    }\n  }\n  videoPlaybackAccessToken(\n    id: $vodID\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isVod) {\n    value\n    signature\n  }\n}",
-          "validatedAt": "2026-09-02T16:18:36.496Z",
-          "source": "ai",
+          "value": "query PlaybackAccessToken($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!, $platform: String!) {\n  streamPlaybackAccessToken(\n    channelName: $login\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isLive) {\n    value\n    signature\n    authorization {\n      isForbidden\n      forbiddenReasonCode\n    }\n  }\n  videoPlaybackAccessToken(\n    id: $vodID\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isVod) {\n    value\n    signature\n  }\n}\n",
+          "validatedAt": "2026-09-02T20:49:08.198Z",
+          "source": "ast",
           "confidence": "high"
         }
       }
@@ -48,6 +48,6 @@
   "signature": {
     "alg": "ed25519",
     "keyId": "k1",
-    "value": "47RY50a1zEnX0k3oBxqzliM0J9VkvsDzuGp/NbWQpec1AYFIIiLrDueL+XUG4ThuUi1jrCOL1//ce89Iihr7AQ=="
+    "value": "0NdnxNd9rs5JOUJv07qdrmsXu0wJYa4u4VjnkON4iMat+NuIj25J3kMyWR43DIn2x9/O+viZjcx0Bm8lutP6CQ=="
   }
 }
