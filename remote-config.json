@@ -1,7 +1,7 @@
 {
   "_schema": 2,
-  "_version": 768,
-  "_generatedAt": "2026-09-06T20:13:31.949Z",
+  "_version": 769,
+  "_generatedAt": "2026-09-07T03:51:16.935Z",
   "gql": {
     "clientId": {
       "active": {
@@ -37,9 +37,9 @@
       },
       "query": {
         "active": {
-          "value": "query PlaybackAccessToken($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!, $platform: String!) {\n  streamPlaybackAccessToken(\n    channelName: $login\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isLive) {\n    value\n    signature\n    authorization {\n      isForbidden\n      forbiddenReasonCode\n    }\n  }\n  videoPlaybackAccessToken(\n    id: $vodID\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isVod) {\n    value\n    signature\n  }\n}",
-          "validatedAt": "2026-09-06T20:13:31.949Z",
-          "source": "ai",
+          "value": "query PlaybackAccessToken($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!, $platform: String!) {\n  streamPlaybackAccessToken(\n    channelName: $login\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isLive) {\n    value\n    signature\n    authorization {\n      isForbidden\n      forbiddenReasonCode\n    }\n  }\n  videoPlaybackAccessToken(\n    id: $vodID\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isVod) {\n    value\n    signature\n  }\n}\n",
+          "validatedAt": "2026-09-07T03:51:16.935Z",
+          "source": "ast",
           "confidence": "high"
         }
       }
@@ -48,6 +48,6 @@
   "signature": {
     "alg": "ed25519",
     "keyId": "k1",
-    "value": "BKh+r6VXejVniIPR9PgXIHz5UjN7M2SRJjcuAVwauMabsEMEGDupEaXjV7XmEq/xq3sv0YAY9659MB9eLkbyCw=="
+    "value": "knO6ZIMnNv1JeKVAq/rznTlUs49rJ5uqMviTSx1CLA8NVMCFi1ELSpQ5j2TsHH9saQGY84ozIjp7yrUHmALZAQ=="
   }
 }
