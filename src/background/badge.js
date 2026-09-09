@@ -22,8 +22,10 @@ const Badge = {
     try {
       var api = chrome.browserAction || chrome.action;
       if (!api) return;
-      api.setBadgeText({ text: text, tabId: tabId });
-      api.setBadgeBackgroundColor({ color: color, tabId: tabId });
+      var p1 = api.setBadgeText({ text: text, tabId: tabId });
+      if (p1 && p1.catch) p1.catch(function() {});
+      var p2 = api.setBadgeBackgroundColor({ color: color, tabId: tabId });
+      if (p2 && p2.catch) p2.catch(function() {});
     } catch (e) {}
   },
 
