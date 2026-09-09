@@ -11,8 +11,8 @@
 
 <p align="center">
   <a href="https://ko-fi.com/dorquex"><img src="https://img.shields.io/badge/Support-Ko--fi-ff5e5b?logo=ko-fi&logoColor=white" alt="Ko-fi"></a>
-  <img src="https://img.shields.io/badge/version-1.1.1-bf94ff" alt="Version">
-  <img src="https://img.shields.io/badge/manifest-v2-333" alt="Manifest V2">
+  <img src="https://img.shields.io/badge/version-1.2.0-bf94ff" alt="Version">
+  <img src="https://img.shields.io/badge/manifest-v3-333" alt="Manifest V3">
   <img src="https://img.shields.io/badge/firefox%20%7C%20chromium-supported-green" alt="Browsers">
 </p>
 
@@ -47,12 +47,12 @@ If both extraction and AI fallback fail, the pipeline sends a **Discord alert** 
 
 ### Chromium (Chrome, Brave, Edge, Opera, Vivaldi, Arc)
 
-This extension is **Manifest V2**. Use it as an **unpacked Developer Mode** extension in Chromium-based browsers that still allow local MV2 installs. Standard MV2 store/user support is already gone, and broader Chromium support may require an MV3 migration later.
+This extension is **Manifest V3**.
 
-1. Download or clone this repo
+1. Download or clone this repo [Download](https://github.com/vorzdesigns/kekw-blocker/archive/refs/heads/main.zip)
 2. Open your browser's extensions page (`chrome://extensions`, `brave://extensions`, `edge://extensions`, etc.)
 3. Enable **Developer mode** (toggle in top-right)
-4. Click **Load unpacked** and select the project folder
+4. Click **Load unpacked** and select the project folder (Extracted from zip)
 5. Navigate to any Twitch stream - ads are blocked immediately
 
 ### Firefox

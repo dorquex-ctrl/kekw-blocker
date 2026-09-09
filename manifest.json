@@ -1,69 +1,53 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "KEKW Blocker",
-  "version": "1.1.1",
-  "description": "Twitch ad blocker with self-healing config",
+  "version": "1.2.0",
+  "description": "Twitch ad blocker that fixes itself.",
   "permissions": [
-    "webRequest",
-    "webRequestBlocking",
-    "tabs",
     "storage",
-    "*://*.twitch.tv/*",
-    "*://usher.ttvnw.net/*",
-    "*://*.hls.ttvnw.net/*",
-    "*://*.ttvnw.net/*",
-    "*://*.cloudfront.net/*",
-    "*://ad.doubleclick.net/*",
-    "*://imasdk.googleapis.com/*",
-    "*://pubads.g.doubleclick.net/*",
-    "*://www.googleadservices.com/*",
-    "*://video-ad-stats.googlesyndication.com/*",
-    "*://pagead2.googlesyndication.com/*",
-    "*://securepubads.g.doubleclick.net/*",
-    "*://*.amazon-adsystem.com/*",
-    "*://dorquex-ctrl.github.io/*"
+    "declarativeNetRequest",
+    "declarativeNetRequestFeedback",
+    "scripting",
+    "webRequest"
   ],
-  "options_page": "options/options.html",
-  "browser_action": {
-    "default_popup": "popup/popup.html",
-    "default_icon": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
-    }
-  },
+  "host_permissions": [
+    "*://*.twitch.tv/*",
+    "*://*.ttvnw.net/*",
+    "*://*.jtvnw.net/*",
+    "https://dorquex-ctrl.github.io/*"
+  ],
   "background": {
-    "scripts": [
-      "src/config.js",
-      "src/background/state.js",
-      "src/background/badge.js",
-      "src/background/layers/segment-sub.js",
-      "src/background/orchestrator.js",
-      "src/background/remote-config.js",
-      "src/background/main.js"
-    ],
-    "persistent": true
+    "service_worker": "src/background/background.js"
   },
   "content_scripts": [
     {
       "matches": ["*://*.twitch.tv/*"],
-      "js": ["src/config.js", "src/content/inject-early.js"],
+      "js": ["src/config.js", "src/content/content-manager.js", "src/content/player-monitor.js"],
       "run_at": "document_start",
       "all_frames": true
-    },
-    {
-      "matches": ["*://*.twitch.tv/*"],
-      "js": ["src/config.js", "src/content/player-monitor.js"],
-      "run_at": "document_idle"
     }
   ],
   "web_accessible_resources": [
-    "assets/blank.ts",
-    "src/content/page-inject.js"
+    {
+      "resources": ["assets/blank.ts", "src/content/page-inject.js"],
+      "matches": ["*://*.twitch.tv/*"]
+    }
   ],
-  "icons": {
-    "16": "icons/icon16.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+  "declarative_net_request": {
+    "rule_resources": [{
+      "id": "ruleset_1",
+      "enabled": true,
+      "path": "rules.json"
+    }]
   }
 }
