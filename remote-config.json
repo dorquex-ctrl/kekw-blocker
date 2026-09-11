@@ -1,7 +1,7 @@
 {
   "_schema": 2,
-  "_version": 796,
-  "_generatedAt": "2026-09-11T03:56:16.009Z",
+  "_version": 797,
+  "_generatedAt": "2026-09-11T10:56:08.257Z",
   "gql": {
     "clientId": {
       "active": {
@@ -37,10 +37,10 @@
       },
       "query": {
         "active": {
-          "value": "query PlaybackAccessToken($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!, $platform: String!) {\n  streamPlaybackAccessToken(\n    channelName: $login\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isLive) {\n    value\n    signature\n    authorization {\n      isForbidden\n      forbiddenReasonCode\n    }\n  }\n  videoPlaybackAccessToken(\n    id: $vodID\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isVod) {\n    value\n    signature\n  }\n}",
-          "validatedAt": "2026-09-11T03:56:16.009Z",
-          "source": "ai",
-          "confidence": "medium"
+          "value": "query PlaybackAccessToken($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!, $platform: String!) {\n  streamPlaybackAccessToken(\n    channelName: $login\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isLive) {\n    value\n    signature\n    authorization {\n      isForbidden\n      forbiddenReasonCode\n    }\n  }\n  videoPlaybackAccessToken(\n    id: $vodID\n    params: {platform: $platform, playerBackend: \"mediaplayer\", playerType: $playerType}\n  ) @include(if: $isVod) {\n    value\n    signature\n  }\n}\n",
+          "validatedAt": "2026-09-11T10:56:08.257Z",
+          "source": "ast",
+          "confidence": "high"
         }
       }
     }
@@ -48,6 +48,6 @@
   "signature": {
     "alg": "ed25519",
     "keyId": "k1",
-    "value": "EB3xNOg9u4xO1lwGfoYcC8FU38sTw+cXvTw+4NeytKG1bkA2lOCSojd3M6v9pTMkDgG84UMmIsANk9x/541PBw=="
+    "value": "VxOWO+GoSiOIHjHqlq+XurVZ2NGoTgm0P3opNCR0EJpsdsWWiVxZaonFem1kfYVPf1hO6lgfH5qLi0DvTi0MCg=="
   }
 }
