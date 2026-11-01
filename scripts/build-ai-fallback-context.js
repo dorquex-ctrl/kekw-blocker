@@ -16,6 +16,7 @@ const ROOT = path.resolve(__dirname, "..");
 const REMOTE_CONFIG_PATH = path.join(ROOT, "remote-config.json");
 const TWITCH_URL = "https://www.twitch.tv/";
 const MAX_REDIRECTS = 5;
+const FETCH_TIMEOUT_MS = 15000;
 const MAX_BUNDLES = 60;
 const MAX_BUNDLE_BYTES = 1500000;
 const MAX_SNIPPETS = 24;
@@ -112,6 +113,9 @@ function fetchTextCapped(url, maxBytes, redirects) {
     });
 
     req.on("error", reject);
+    req.setTimeout(FETCH_TIMEOUT_MS, () => {
+      req.destroy(new Error("Timeout fetching " + url));
+    });
   });
 }
 
