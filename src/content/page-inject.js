@@ -2278,30 +2278,6 @@
                     reload: "KEKW Blocker: Reloading stream"
                   }
                 });
-              } else if (false) {
-                var now = Date.now();
-                if (now - playerBufferState.lastSeekToLiveTime > LOOP_SEEK_COOLDOWN) {
-                  console.log("[TTV] Loop detected — seeking to live edge");
-                  playerBufferState.lastSeekToLiveTime = now;
-                  playerBufferState.lastFixTime = now;
-                  playerBufferState.backwardJumps = 0;
-                  playerBufferState.numSame = 0;
-                  if (seekToLiveEdge(player)) {
-                    showTtvNotification("KEKW Blocker: Syncing to live");
-                  } else {
-                    showTtvNotification("KEKW Blocker: Recovering stream");
-                    doTwitchPlayerTask(true, false);
-                  }
-                } else if (now - playerBufferState.lastFixTime > LOOP_RELOAD_COOLDOWN) {
-                  playerBufferState.loopReloadCount++;
-                  console.log("[TTV] Loop persists — reloading player (attempt " + playerBufferState.loopReloadCount + ")");
-                  playerBufferState.lastFixTime = now;
-                  playerBufferState.lastSeekToLiveTime = now;
-                  playerBufferState.backwardJumps = 0;
-                  playerBufferState.numSame = 0;
-                  showTtvNotification("KEKW Blocker: Reloading stream");
-                  doTwitchPlayerTask(false, true);
-                }
               }
             }
             // --- Stall detection: position not advancing ---
