@@ -2410,18 +2410,20 @@
         cachedValues.set(keysToCache[i], localStorage.getItem(keysToCache[i]));
       }
       _lsCachedValues = cachedValues;
-      var realSetItem = localStorage.setItem;
-      localStorage.setItem = function (key, value) {
-        if (cachedValues.has(key)) cachedValues.set(key, value);
-        realSetItem.apply(this, arguments);
+      // Hook Storage.prototype: assigning localStorage.getItem does not
+      // replace the method in Firefox, and stores a "getItem" item in Chromium.
+      var storageProto = Object.getPrototypeOf(localStorage);
+      var realSetItem = storageProto.setItem;
+      var realGetItem = storageProto.getItem;
+      storageProto.setItem = function (key, value) {
+        if (this === localStorage && cachedValues.has(key)) cachedValues.set(key, value);
+        return realSetItem.apply(this, arguments);
       };
-      var realGetItem = localStorage.getItem;
-      localStorage.getItem = function (key) {
-        if (cachedValues.has(key)) return cachedValues.get(key);
+      storageProto.getItem = function (key) {
+        if (this === localStorage && cachedValues.has(key)) return cachedValues.get(key);
         return realGetItem.apply(this, arguments);
       };
-      localStorage.getItem._ttvHooked = true;
-      if (!localStorage.getItem._ttvHooked) {
+      if (localStorage.getItem === realGetItem) {
         localStorageHookFailed = true;
       }
     } catch (err) {
