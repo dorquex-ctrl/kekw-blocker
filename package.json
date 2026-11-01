@@ -6,7 +6,8 @@
     "package:firefox": "node scripts/build.js firefox --xpi",
     "package:firefox:amo": "node scripts/build.js firefox-amo --xpi",
     "package:source": "node scripts/package-source.js",
-    "lint:firefox:amo": "web-ext lint --source-dir dist/firefox-amo"
+    "lint:firefox:amo": "web-ext lint --source-dir dist/firefox-amo",
+    "test": "node scripts/test-remote-config-v2.js && node scripts/test-remote-config-extension.js"
   },
   "devDependencies": {
     "sharp": "^0.34.5",

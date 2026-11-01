@@ -57,6 +57,10 @@ function isValidQuery(value) {
     value.includes("streamPlaybackAccessToken");
 }
 
+function normalizeQueryText(value) {
+  return typeof value === "string" ? value.trim() : value;
+}
+
 function createValueRecord(value, source, confidence, validatedAt) {
   return {
     value: value,
@@ -210,7 +214,10 @@ function applyCandidates(currentConfig, candidates, bundledQuery) {
   const normalizedQuery = normalizeValueRecord(candidates && candidates.playbackAccessTokenQuery, isValidQuery);
   if (normalizedQuery) {
     const currentQuery = nextConfig.gql.playbackAccessToken.query.active;
-    if (!currentQuery || currentQuery.value !== normalizedQuery.value) {
+    // The AST printer ends the query with a newline and the AI answer does
+    // not: comparing raw strings made every run "change" the query.
+    normalizedQuery.value = normalizeQueryText(normalizedQuery.value);
+    if (!currentQuery || normalizeQueryText(currentQuery.value) !== normalizedQuery.value) {
       nextConfig.gql.playbackAccessToken.query.active = normalizedQuery;
       changed = true;
     }
@@ -298,7 +305,31 @@ function fetchText(url, maxRedirects) {
   });
 }
 
-function probeGql(body, clientId) {
+const PROBE_RETRY_DELAY_MS = 2000;
+
+// A network error, a timeout or a 5xx says nothing about the value being
+// probed: retry once so a transient failure is not reported as stale.
+async function probeGql(body, clientId) {
+  const response = await probeGqlOnce(body, clientId);
+  if (!clientId || (response.status !== 0 && response.status < 500)) return response;
+  await new Promise((resolve) => setTimeout(resolve, PROBE_RETRY_DELAY_MS));
+  return probeGqlOnce(body, clientId);
+}
+
+function describeProbeFailure(response) {
+  const parts = [response.status ? "HTTP " + response.status : "no response"];
+  const items = getGraphqlItems(response.body);
+  for (let i = 0; i < items.length; i++) {
+    const errors = items[i] && items[i].errors;
+    if (Array.isArray(errors) && errors.length && errors[0] && typeof errors[0].message === "string") {
+      parts.push(errors[0].message.slice(0, 200));
+      break;
+    }
+  }
+  return parts.join(", ");
+}
+
+function probeGqlOnce(body, clientId) {
   return new Promise((resolve) => {
     if (!clientId) {
       resolve({ ok: false, status: 0, body: null });
@@ -352,21 +383,6 @@ function hasAnyGraphqlErrors(body) {
   return false;
 }
 
-function hasPersistedQueryNotFound(body) {
-  const items = getGraphqlItems(body);
-  for (let i = 0; i < items.length; i++) {
-    const errors = items[i] && items[i].errors;
-    if (!Array.isArray(errors)) continue;
-    for (let j = 0; j < errors.length; j++) {
-      const message = errors[j] && errors[j].message;
-      if (typeof message === "string" && message.indexOf("PersistedQueryNotFound") !== -1) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
 async function validateHash(hash, clientId) {
   if (!isValidHash(hash) || !isValidClientId(clientId)) return false;
   const response = await probeGql({
@@ -386,9 +402,11 @@ async function validateHash(hash, clientId) {
       }
     }
   }, clientId);
-  if (!response.ok || !response.body) return false;
-  if (hasPersistedQueryNotFound(response.body)) return false;
-  return !hasAnyGraphqlErrors(response.body);
+  if (!response.ok || !response.body || hasAnyGraphqlErrors(response.body)) {
+    console.warn("[validate] PlaybackAccessToken hash " + hash.slice(0, 8) + " rejected: " + describeProbeFailure(response));
+    return false;
+  }
+  return true;
 }
 
 async function validateQuery(query, clientId) {
@@ -405,8 +423,11 @@ async function validateQuery(query, clientId) {
       platform: "web"
     }
   }, clientId);
-  if (!response.ok || !response.body) return false;
-  return !hasAnyGraphqlErrors(response.body);
+  if (!response.ok || !response.body || hasAnyGraphqlErrors(response.body)) {
+    console.warn("[validate] PlaybackAccessToken query rejected: " + describeProbeFailure(response));
+    return false;
+  }
+  return true;
 }
 
 async function validateClientId(clientId, hash, query) {

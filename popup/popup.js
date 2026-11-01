@@ -7,21 +7,67 @@
     return element;
   }
 
-  function createStatusRow(label, value, valueClass) {
+  function createStatusRow(label) {
     var row = createElement("div", "status-row");
+    var value = createElement("span", "status-value");
     row.appendChild(createElement("span", "status-label", label));
-    row.appendChild(createElement("span", "status-value" + (valueClass ? " " + valueClass : ""), value));
-    return row;
+    row.appendChild(value);
+    return { row: row, value: value };
+  }
+
+  // Built once and then updated in place: rebuilding the content on every
+  // refresh would drop keyboard focus from the toggle every two seconds.
+  var view = null;
+
+  function buildView(content) {
+    content.textContent = "";
+
+    var noChannel = createElement("div", "no-channel", "Navigate to a Twitch stream to see status");
+    var statusCard = createElement("div", "status-card");
+    var channelRow = createStatusRow("Channel");
+    var statusRow = createStatusRow("Status");
+    statusCard.appendChild(channelRow.row);
+    statusCard.appendChild(statusRow.row);
+
+    var toggleRow = createElement("div", "toggle-row");
+    toggleRow.appendChild(createElement("span", "toggle-label", "Ad Blocking"));
+
+    var toggleLabel = createElement("label", "toggle");
+    var toggleInput = createElement("input");
+    toggleInput.type = "checkbox";
+    toggleInput.id = "toggleEnabled";
+    toggleInput.setAttribute("aria-label", "Toggle ad blocking");
+    toggleInput.addEventListener("change", function () {
+      chrome.runtime.sendMessage({ type: "SET_ENABLED", enabled: toggleInput.checked });
+    });
+
+    toggleLabel.appendChild(toggleInput);
+    toggleLabel.appendChild(createElement("span", "toggle-slider"));
+    toggleRow.appendChild(toggleLabel);
+
+    content.appendChild(noChannel);
+    content.appendChild(statusCard);
+    content.appendChild(toggleRow);
+
+    return {
+      noChannel: noChannel,
+      statusCard: statusCard,
+      channelValue: channelRow.value,
+      statusValue: statusRow.value,
+      toggleInput: toggleInput
+    };
   }
 
   function render(data) {
     var content = document.getElementById("content");
     if (!content) return;
-    content.textContent = "";
+    if (!view) view = buildView(content);
 
-    if (!data.channel) {
-      content.appendChild(createElement("div", "no-channel", "Navigate to a Twitch stream to see status"));
-    } else {
+    var hasChannel = !!data.channel;
+    view.noChannel.style.display = hasChannel ? "none" : "";
+    view.statusCard.style.display = hasChannel ? "" : "none";
+
+    if (hasChannel) {
       var statusText;
       var statusClass;
       if (data.enabled === false) {
@@ -34,30 +80,13 @@
         statusText = "Enabled";
         statusClass = "status-enabled";
       }
-
-      var statusCard = createElement("div", "status-card");
-      statusCard.appendChild(createStatusRow("Channel", data.channel));
-      statusCard.appendChild(createStatusRow("Status", statusText, statusClass));
-      content.appendChild(statusCard);
+      view.channelValue.textContent = data.channel;
+      view.statusValue.textContent = statusText;
+      view.statusValue.className = "status-value " + statusClass;
     }
 
-    var toggleRow = createElement("div", "toggle-row");
-    toggleRow.appendChild(createElement("span", "toggle-label", "Ad Blocking"));
-
-    var toggleLabel = createElement("label", "toggle");
-    var toggleInput = createElement("input");
-    toggleInput.type = "checkbox";
-    toggleInput.id = "toggleEnabled";
-    toggleInput.setAttribute("aria-label", "Toggle ad blocking");
-    toggleInput.checked = data.enabled !== false;
-    toggleInput.addEventListener("change", function () {
-      chrome.runtime.sendMessage({ type: "SET_ENABLED", enabled: toggleInput.checked });
-    });
-
-    toggleLabel.appendChild(toggleInput);
-    toggleLabel.appendChild(createElement("span", "toggle-slider"));
-    toggleRow.appendChild(toggleLabel);
-    content.appendChild(toggleRow);
+    var enabled = data.enabled !== false;
+    if (view.toggleInput.checked !== enabled) view.toggleInput.checked = enabled;
   }
 
   function refreshState() {

@@ -221,6 +221,8 @@
           " + declareOptions.toString() + "\
           " + getAccessToken.toString() + "\
           " + gqlRequest.toString() + "\
+          var sendGqlFetch = " + workerSendGqlFetch.toString() + ";\
+          var reportRemoteConfigFailure = " + workerReportRemoteConfigFailure.toString() + ";\
           " + parseAttributes.toString() + "\
           " + getServerTimeFromM3u8.toString() + "\
           " + replaceServerTimeInM3u8.toString() + "\
@@ -381,9 +383,18 @@
         super.terminate();
       }
     };
+    var hookedWorker = newWorker;
     Object.defineProperty(window, "Worker", {
       get: function () { return newWorker; },
-      set: function (value) { newWorker = value; }
+      // Accepting any value would let a reassignment silently drop the hook.
+      // A subclass keeps it, since its constructor still runs ours.
+      set: function (value) {
+        if (typeof value === "function" && (value === hookedWorker || value.prototype instanceof hookedWorker)) {
+          newWorker = value;
+        } else {
+          console.warn("[TTV] Ignored an attempt to replace window.Worker");
+        }
+      }
     });
   }
 
@@ -399,17 +410,17 @@
         }
         url = url.trimEnd();
         if (url.endsWith("m3u8")) {
-          return new Promise(function (resolve, reject) {
-            var processAfter = async function (response) {
-              if (response.status === 200) {
-                resolve(new Response(await processM3U8(url, await response.text(), realFetch)));
-              } else {
-                resolve(response);
-              }
-            };
-            realFetch(url, options).then(function (response) {
-              processAfter(response);
-            })["catch"](function (err) { reject(err); });
+          // Chain the promises: an error thrown while rewriting the playlist must
+          // not leave the player's request pending forever.
+          return realFetch(url, options).then(async function (response) {
+            if (response.status !== 200) return response;
+            var text = await response.text();
+            try {
+              return new Response(await processM3U8(url, text, realFetch));
+            } catch (error) {
+              console.warn("[TTV Worker] Failed to process a media playlist: " + (error && error.message));
+              return new Response(text);
+            }
           });
         } else if (url.includes("/channel/hls/") && !url.includes("picture-by-picture")) {
           V2API = url.includes("/api/v2/");
@@ -421,110 +432,108 @@
             tempUrl.searchParams.delete("parent_domains");
             url = tempUrl.toString();
           }
-          return new Promise(function (resolve, reject) {
-            var processAfter = async function (response) {
-              if (response.status == 200) {
-                var encodingsM3u8 = await response.text();
-                var serverTime = getServerTimeFromM3u8(encodingsM3u8);
-                var streamInfo = StreamInfos[channelName];
-                if (streamInfo != null && streamInfo.EncodingsM3U8 != null && (await realFetch(streamInfo.EncodingsM3U8.match(/^https:.*\.m3u8$/m)[0])).status !== 200) {
-                  streamInfo = null;
-                }
-                // Reset HEVC state on re-entry to prevent stale codec swapping
-                if (streamInfo != null && !streamInfo.IsShowingAd) {
-                  streamInfo.IsUsingModifiedM3U8 = false;
-                }
-                if (streamInfo == null || streamInfo.EncodingsM3U8 == null) {
-                  // Clean up stale entries from other channels to prevent memory leaks
-                  for (var oldKey in StreamInfos) {
-                    if (oldKey !== channelName) {
-                      var oldInfo = StreamInfos[oldKey];
-                      if (oldInfo && oldInfo.Urls) {
-                        for (var oldUrl in oldInfo.Urls) { delete StreamInfosByUrl[oldUrl]; }
-                      }
-                      delete StreamInfos[oldKey];
-                    }
-                  }
-                  StreamInfos[channelName] = streamInfo = {
-                    ChannelName: channelName,
-                    IsShowingAd: false,
-                    LastPlayerReload: 0,
-                    EncodingsM3U8: encodingsM3u8,
-                    ModifiedM3U8: null,
-                    IsUsingModifiedM3U8: false,
-                    UsherParams: (new URL(url)).search,
-                    RequestedAds: new Set(),
-                    Urls: Object.create(null),
-                    ResolutionList: [],
-                    BackupEncodingsM3U8Cache: Object.create(null),
-                    ActiveBackupPlayerType: null,
-                    PreferredPlayerType: getPreferredPlayerType(channelName),
-                    LastSuccessfulPlayerType: null,
-                    LastRankedBackupPlayerType: null,
-                    PlayerTypeSessionScores: Object.create(null),
-                    IsMidroll: false,
-                    IsStrippingAdSegments: false,
-                    NumStrippedAdSegments: 0
-                  };
-                  var lines = encodingsM3u8.replaceAll("\r", "").split("\n");
-                  for (var i = 0; i < lines.length - 1; i++) {
-                    if (lines[i].startsWith("#EXT-X-STREAM-INF") && lines[i + 1].includes(".m3u8")) {
-                      var attributes = parseAttributes(lines[i]);
-                      var resolution = attributes["RESOLUTION"];
-                      if (resolution) {
-                        var resolutionInfo = {
-                          Resolution: resolution,
-                          FrameRate: attributes["FRAME-RATE"],
-                          Codecs: attributes["CODECS"],
-                          Url: lines[i + 1]
-                        };
-                        streamInfo.Urls[lines[i + 1]] = resolutionInfo;
-                        streamInfo.ResolutionList.push(resolutionInfo);
-                        StreamInfosByUrl[lines[i + 1]] = streamInfo;
-                      }
-                    }
-                  }
-                  // HEVC handling: swap HEVC variants to AVC for player reload compatibility
-                  var nonHevcList = streamInfo.ResolutionList.filter(function (el) {
-                    return el.Codecs.startsWith("avc") || el.Codecs.startsWith("av0");
-                  });
-                  var hasHevc = streamInfo.ResolutionList.some(function (el) {
-                    return el.Codecs.startsWith("hev") || el.Codecs.startsWith("hvc");
-                  });
-                  if (nonHevcList.length > 0 && hasHevc) {
-                    for (var i = 0; i < lines.length - 1; i++) {
-                      if (lines[i].startsWith("#EXT-X-STREAM-INF")) {
-                        var resSettings = parseAttributes(lines[i].substring(lines[i].indexOf(":") + 1));
-                        var codecsKey = "CODECS";
-                        if (resSettings[codecsKey] && (resSettings[codecsKey].startsWith("hev") || resSettings[codecsKey].startsWith("hvc"))) {
-                          var oldRes = resSettings["RESOLUTION"];
-                          var parts = oldRes.split("x").map(Number);
-                          var targetW = parts[0], targetH = parts[1];
-                          var best = nonHevcList.sort(function (a, b) {
-                            var pa = a.Resolution.split("x").map(Number);
-                            var pb = b.Resolution.split("x").map(Number);
-                            return Math.abs((pa[0] * pa[1]) - (targetW * targetH)) - Math.abs((pb[0] * pb[1]) - (targetW * targetH));
-                          })[0];
-                          console.log("[TTV Worker] HEVC swap: " + resSettings[codecsKey] + " -> " + best.Codecs + " " + oldRes + " -> " + best.Resolution);
-                          lines[i] = lines[i].replace(/CODECS="[^"]+"/, 'CODECS="' + best.Codecs + '"');
-                          lines[i + 1] = best.Url + " ".repeat(i + 1);
-                        }
-                      }
-                    }
-                    streamInfo.ModifiedM3U8 = lines.join("\n");
-                  }
-                }
-                // Notify main thread to pre-warm backup streams
-                postMessage({ key: "StreamInitialized", channelName: channelName, usherParams: streamInfo.UsherParams, v2api: V2API });
-                streamInfo.LastPlayerReload = Date.now();
-                resolve(new Response(replaceServerTimeInM3u8(streamInfo.IsUsingModifiedM3U8 ? streamInfo.ModifiedM3U8 : streamInfo.EncodingsM3U8, serverTime)));
-              } else {
-                resolve(response);
+          return realFetch(url, options).then(async function (response) {
+            if (response.status != 200) return response;
+            var encodingsM3u8 = await response.text();
+            try {
+              var serverTime = getServerTimeFromM3u8(encodingsM3u8);
+              var streamInfo = StreamInfos[channelName];
+              if (streamInfo != null && streamInfo.EncodingsM3U8 != null) {
+                var cachedMediaUrl = streamInfo.EncodingsM3U8.match(/^https:.*\.m3u8$/m);
+                if (!cachedMediaUrl || (await realFetch(cachedMediaUrl[0])).status !== 200) streamInfo = null;
               }
-            };
-            realFetch(url, options).then(function (response) {
-              processAfter(response);
-            })["catch"](function (err) { reject(err); });
+              // Reset HEVC state on re-entry to prevent stale codec swapping
+              if (streamInfo != null && !streamInfo.IsShowingAd) {
+                streamInfo.IsUsingModifiedM3U8 = false;
+              }
+              if (streamInfo == null || streamInfo.EncodingsM3U8 == null) {
+                // Clean up stale entries from other channels to prevent memory leaks
+                for (var oldKey in StreamInfos) {
+                  if (oldKey !== channelName) {
+                    var oldInfo = StreamInfos[oldKey];
+                    if (oldInfo && oldInfo.Urls) {
+                      for (var oldUrl in oldInfo.Urls) { delete StreamInfosByUrl[oldUrl]; }
+                    }
+                    delete StreamInfos[oldKey];
+                  }
+                }
+                StreamInfos[channelName] = streamInfo = {
+                  ChannelName: channelName,
+                  IsShowingAd: false,
+                  LastPlayerReload: 0,
+                  EncodingsM3U8: encodingsM3u8,
+                  ModifiedM3U8: null,
+                  IsUsingModifiedM3U8: false,
+                  UsherParams: (new URL(url)).search,
+                  RequestedAds: new Set(),
+                  Urls: Object.create(null),
+                  ResolutionList: [],
+                  BackupEncodingsM3U8Cache: Object.create(null),
+                  ActiveBackupPlayerType: null,
+                  PreferredPlayerType: getPreferredPlayerType(channelName),
+                  LastSuccessfulPlayerType: null,
+                  LastRankedBackupPlayerType: null,
+                  PlayerTypeSessionScores: Object.create(null),
+                  IsMidroll: false,
+                  IsStrippingAdSegments: false,
+                  NumStrippedAdSegments: 0
+                };
+                var lines = encodingsM3u8.replaceAll("\r", "").split("\n");
+                for (var i = 0; i < lines.length - 1; i++) {
+                  if (lines[i].startsWith("#EXT-X-STREAM-INF") && lines[i + 1].includes(".m3u8")) {
+                    var attributes = parseAttributes(lines[i]);
+                    var resolution = attributes["RESOLUTION"];
+                    if (resolution) {
+                      var resolutionInfo = {
+                        Resolution: resolution,
+                        FrameRate: attributes["FRAME-RATE"],
+                        Codecs: attributes["CODECS"],
+                        Url: lines[i + 1]
+                      };
+                      streamInfo.Urls[lines[i + 1]] = resolutionInfo;
+                      streamInfo.ResolutionList.push(resolutionInfo);
+                      StreamInfosByUrl[lines[i + 1]] = streamInfo;
+                    }
+                  }
+                }
+                // HEVC handling: swap HEVC variants to AVC for player reload compatibility
+                var nonHevcList = streamInfo.ResolutionList.filter(function (el) {
+                  return el.Codecs.startsWith("avc") || el.Codecs.startsWith("av0");
+                });
+                var hasHevc = streamInfo.ResolutionList.some(function (el) {
+                  return el.Codecs.startsWith("hev") || el.Codecs.startsWith("hvc");
+                });
+                if (nonHevcList.length > 0 && hasHevc) {
+                  for (var i = 0; i < lines.length - 1; i++) {
+                    if (lines[i].startsWith("#EXT-X-STREAM-INF")) {
+                      var resSettings = parseAttributes(lines[i].substring(lines[i].indexOf(":") + 1));
+                      var codecsKey = "CODECS";
+                      if (resSettings[codecsKey] && (resSettings[codecsKey].startsWith("hev") || resSettings[codecsKey].startsWith("hvc"))) {
+                        var oldRes = resSettings["RESOLUTION"];
+                        var parts = oldRes.split("x").map(Number);
+                        var targetW = parts[0], targetH = parts[1];
+                        var best = nonHevcList.sort(function (a, b) {
+                          var pa = a.Resolution.split("x").map(Number);
+                          var pb = b.Resolution.split("x").map(Number);
+                          return Math.abs((pa[0] * pa[1]) - (targetW * targetH)) - Math.abs((pb[0] * pb[1]) - (targetW * targetH));
+                        })[0];
+                        console.log("[TTV Worker] HEVC swap: " + resSettings[codecsKey] + " -> " + best.Codecs + " " + oldRes + " -> " + best.Resolution);
+                        lines[i] = lines[i].replace(/CODECS="[^"]+"/, 'CODECS="' + best.Codecs + '"');
+                        lines[i + 1] = best.Url + " ".repeat(i + 1);
+                      }
+                    }
+                  }
+                  streamInfo.ModifiedM3U8 = lines.join("\n");
+                }
+              }
+              // Notify main thread to pre-warm backup streams
+              postMessage({ key: "StreamInitialized", channelName: channelName, usherParams: streamInfo.UsherParams, v2api: V2API });
+              streamInfo.LastPlayerReload = Date.now();
+              return new Response(replaceServerTimeInM3u8(streamInfo.IsUsingModifiedM3U8 ? streamInfo.ModifiedM3U8 : streamInfo.EncodingsM3U8, serverTime));
+            } catch (error) {
+              console.warn("[TTV Worker] Failed to process the master playlist: " + (error && error.message));
+              return new Response(encodingsM3u8);
+            }
           });
         }
       }
@@ -848,9 +857,10 @@
     return result;
   }
 
-  // getAccessToken is toString'd into the Worker blob, so all variables it
-  // references must be Worker globals. PlaybackAccessTokenQuery and
-  // HashFailedOnce are declared in declareOptions() for this reason.
+  // getAccessToken is toString'd into the Worker blob and also runs on the main
+  // thread for pre-warm, so every variable it references must be a global in
+  // both contexts. PlaybackAccessTokenQuery and HashFailedOnce are declared in
+  // declareOptions() for this reason.
   function getAccessToken(channelName, playerType) {
     var variables = {
       isLive: true, login: channelName, isVod: false, vodID: "",
@@ -912,12 +922,11 @@
         return response.text().then(function (text) {
           var errors = parseErrors(text);
           if (isRemoteQuery && (response.status >= 400 || hasGraphqlFailure(errors))) {
-            postMessage({
-              key: "RemoteConfigFailure",
-              failureType: "playbackAccessTokenQuery",
-              failedValue: queryText,
-              reason: response.status >= 400 ? "remote-query-http-" + response.status : "remote-query-rejected"
-            });
+            reportRemoteConfigFailure(
+              "playbackAccessTokenQuery",
+              queryText,
+              response.status >= 400 ? "remote-query-http-" + response.status : "remote-query-rejected"
+            );
             return requestWithQuery(PlaybackAccessTokenQuery, false);
           }
           return reconstructResponse(response, text);
@@ -950,12 +959,7 @@
           if (hasPersistedQueryNotFound(errors)) {
             if (hash === PlaybackAccessTokenHash) {
               HashFailedOnce = true;
-              postMessage({
-                key: "RemoteConfigFailure",
-                failureType: "playbackAccessTokenHash",
-                failedValue: hash,
-                reason: "PersistedQueryNotFound"
-              });
+              reportRemoteConfigFailure("playbackAccessTokenHash", hash, "PersistedQueryNotFound");
             }
             return requestWithHashes(hashCandidates, index + 1);
           }
@@ -989,31 +993,15 @@
     function sendRequestWithClientId(clientId) {
       var headers = {
         "Client-ID": clientId,
-        "X-Device-Id": GQLDeviceID,
-        "Authorization": AuthorizationHeader
+        "X-Device-Id": GQLDeviceID
       };
+      // Only when Twitch sent one: otherwise the header would read "null" or "undefined".
+      if (AuthorizationHeader) headers["Authorization"] = AuthorizationHeader;
       if (ClientIntegrityHeader) headers["Client-Integrity"] = ClientIntegrityHeader;
       if (ClientVersion) headers["Client-Version"] = ClientVersion;
       if (ClientSession) headers["Client-Session-Id"] = ClientSession;
 
-      return new Promise(function (resolve, reject) {
-        var requestId = Math.random().toString(36).substring(2, 15);
-        pendingFetchRequests.set(requestId, { resolve: resolve, reject: reject });
-        setTimeout(function () {
-          if (pendingFetchRequests.has(requestId)) {
-            pendingFetchRequests.delete(requestId);
-            reject(new Error("Fetch request timed out"));
-          }
-        }, 30000);
-        postMessage({
-          key: "FetchRequest",
-          value: {
-            id: requestId,
-            url: GqlUrl,
-            options: { method: "POST", body: JSON.stringify(body), headers: headers }
-          }
-        });
-      });
+      return sendGqlFetch(GqlUrl, { method: "POST", body: JSON.stringify(body), headers: headers });
     }
 
     function parseClientIdRejection(response, text) {
@@ -1040,12 +1028,7 @@
         return response.text().then(function (text) {
           var rejected = parseClientIdRejection(response, text);
           if (rejected && clientId === ClientID) {
-            postMessage({
-              key: "RemoteConfigFailure",
-              failureType: "clientId",
-              failedValue: clientId,
-              reason: "client-id-rejected"
-            });
+            reportRemoteConfigFailure("clientId", clientId, "client-id-rejected");
           }
           if (rejected && index + 1 < clientIds.length) {
             return attemptClientIds(clientIds, index + 1);
@@ -1060,6 +1043,36 @@
     }
 
     return attemptClientIds(getClientIdCandidates(), 0);
+  }
+
+  // getAccessToken and gqlRequest run both in the Worker and on the main
+  // thread (pre-warm). Each context defines its own sendGqlFetch and
+  // reportRemoteConfigFailure; these two are the Worker's, injected into the
+  // blob as strings. The Worker's GQL requests are sent by the main thread
+  // (see handleWorkerFetchRequest).
+  function workerSendGqlFetch(url, options) {
+    return new Promise(function (resolve, reject) {
+      var requestId = Math.random().toString(36).substring(2, 15);
+      pendingFetchRequests.set(requestId, { resolve: resolve, reject: reject });
+      setTimeout(function () {
+        if (pendingFetchRequests.has(requestId)) {
+          pendingFetchRequests.delete(requestId);
+          reject(new Error("Fetch request timed out"));
+        }
+      }, 30000);
+      postMessage({
+        key: "FetchRequest",
+        value: { id: requestId, url: url, options: options }
+      });
+    });
+  }
+
+  function workerReportRemoteConfigFailure(type, value, reason) {
+    postMessage({ key: "RemoteConfigFailure", failureType: type, failedValue: value, reason: reason || "" });
+  }
+
+  function sendGqlFetch(url, options) {
+    return (_realFetch || window.fetch)(url, options);
   }
 
   // --- Main thread: handle worker fetch requests
@@ -1189,29 +1202,12 @@
     return 1;
   }
 
+  // Same token request as the Worker's backup streams, so pre-warm also tries
+  // the fallback hashes, the fallback client IDs and the full query.
   function fetchPreWarmMasterPlaylist(state, playerType, fetchFn) {
     var realPlayerType = playerType.replace("-CACHED", "");
-    var variables = {
-      isLive: true, login: state.channelName, isVod: false, vodID: "",
-      playerType: realPlayerType,
-      platform: realPlayerType === "autoplay" ? "android" : "web"
-    };
-    var body = {
-      operationName: "PlaybackAccessToken",
-      variables: variables,
-      extensions: { persistedQuery: { version: 1, sha256Hash: PlaybackAccessTokenHash } }
-    };
-    var headers = { "Client-ID": ClientID, "Content-Type": "application/json" };
-    if (GQLDeviceID) headers["X-Device-Id"] = GQLDeviceID;
-    if (AuthorizationHeader) headers["Authorization"] = AuthorizationHeader;
-    if (ClientIntegrityHeader) headers["Client-Integrity"] = ClientIntegrityHeader;
-
-    return fetchFn("https://gql.twitch.tv/gql", {
-      method: "POST",
-      headers: headers,
-      body: JSON.stringify(body)
-    }).then(function (response) {
-      if (response.status !== 200) return null;
+    return getAccessToken(state.channelName, realPlayerType).then(function (response) {
+      if (!response || response.status !== 200) return null;
       return response.json().then(function (accessToken) {
         if (!accessToken.data || !accessToken.data.streamPlaybackAccessToken) return null;
         var urlInfo = new URL("https://usher.ttvnw.net/api/" + (state.v2api ? "v2/" : "") + "channel/hls/" + state.channelName + ".m3u8" + state.usherParams);
@@ -2057,6 +2053,7 @@
     if (cfg.playbackAccessTokenHash && cfg.playbackAccessTokenHash !== PlaybackAccessTokenHash) {
       console.log("[TTV] Remote config: Updated PlaybackAccessToken hash");
       PlaybackAccessTokenHash = cfg.playbackAccessTokenHash;
+      HashFailedOnce = false;
       postTwitchWorkerMessage("UpdatePlaybackAccessTokenHash", cfg.playbackAccessTokenHash);
     }
     if (Array.isArray(cfg.playbackAccessTokenHashFallbacks)) {
@@ -2281,30 +2278,6 @@
                     reload: "KEKW Blocker: Reloading stream"
                   }
                 });
-              } else if (false) {
-                var now = Date.now();
-                if (now - playerBufferState.lastSeekToLiveTime > LOOP_SEEK_COOLDOWN) {
-                  console.log("[TTV] Loop detected — seeking to live edge");
-                  playerBufferState.lastSeekToLiveTime = now;
-                  playerBufferState.lastFixTime = now;
-                  playerBufferState.backwardJumps = 0;
-                  playerBufferState.numSame = 0;
-                  if (seekToLiveEdge(player)) {
-                    showTtvNotification("KEKW Blocker: Syncing to live");
-                  } else {
-                    showTtvNotification("KEKW Blocker: Recovering stream");
-                    doTwitchPlayerTask(true, false);
-                  }
-                } else if (now - playerBufferState.lastFixTime > LOOP_RELOAD_COOLDOWN) {
-                  playerBufferState.loopReloadCount++;
-                  console.log("[TTV] Loop persists — reloading player (attempt " + playerBufferState.loopReloadCount + ")");
-                  playerBufferState.lastFixTime = now;
-                  playerBufferState.lastSeekToLiveTime = now;
-                  playerBufferState.backwardJumps = 0;
-                  playerBufferState.numSame = 0;
-                  showTtvNotification("KEKW Blocker: Reloading stream");
-                  doTwitchPlayerTask(false, true);
-                }
               }
             }
             // --- Stall detection: position not advancing ---
@@ -2413,18 +2386,20 @@
         cachedValues.set(keysToCache[i], localStorage.getItem(keysToCache[i]));
       }
       _lsCachedValues = cachedValues;
-      var realSetItem = localStorage.setItem;
-      localStorage.setItem = function (key, value) {
-        if (cachedValues.has(key)) cachedValues.set(key, value);
-        realSetItem.apply(this, arguments);
+      // Hook Storage.prototype: assigning localStorage.getItem does not
+      // replace the method in Firefox, and stores a "getItem" item in Chromium.
+      var storageProto = Object.getPrototypeOf(localStorage);
+      var realSetItem = storageProto.setItem;
+      var realGetItem = storageProto.getItem;
+      storageProto.setItem = function (key, value) {
+        if (this === localStorage && cachedValues.has(key)) cachedValues.set(key, value);
+        return realSetItem.apply(this, arguments);
       };
-      var realGetItem = localStorage.getItem;
-      localStorage.getItem = function (key) {
-        if (cachedValues.has(key)) return cachedValues.get(key);
+      storageProto.getItem = function (key) {
+        if (this === localStorage && cachedValues.has(key)) return cachedValues.get(key);
         return realGetItem.apply(this, arguments);
       };
-      localStorage.getItem._ttvHooked = true;
-      if (!localStorage.getItem._ttvHooked) {
+      if (localStorage.getItem === realGetItem) {
         localStorageHookFailed = true;
       }
     } catch (err) {
