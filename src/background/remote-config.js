@@ -1,9 +1,7 @@
 // Remote config - signed schema v2 with runtime-learned temporary fallbacks.
-// URL overridable via chrome.storage.local key 'ttvRemoteConfigUrl'.
 
 const RemoteConfig = {
-  _defaultUrl: TTV_CONFIG.remoteConfig && TTV_CONFIG.remoteConfig.defaultUrl || "https://dorquex-ctrl.github.io/kekw-blocker/remote-config.json",
-  _url: "",
+  _url: TTV_CONFIG.remoteConfig && TTV_CONFIG.remoteConfig.defaultUrl || "https://dorquex-ctrl.github.io/kekw-blocker/remote-config.json",
   _checkIntervalMs: TTV_CONFIG.remoteConfig && TTV_CONFIG.remoteConfig.pollIntervalMs || 60 * 60 * 1000,
   _acceleratedRetryMs: TTV_CONFIG.remoteConfig && TTV_CONFIG.remoteConfig.acceleratedRetryMs || [5 * 60 * 1000, 15 * 60 * 1000],
   _runtimeCandidateWindowMs: TTV_CONFIG.remoteConfig && TTV_CONFIG.remoteConfig.runtimeCandidateWindowMs || 6 * 60 * 60 * 1000,
@@ -13,13 +11,11 @@ const RemoteConfig = {
   _acceleratedRetryTimers: [],
   _lastVersion: 0,
   _effectiveCache: null,
-  _legacyEffectiveCache: null,
   _lastKnownGoodSignedConfig: null,
   _runtimeCandidates: null,
   _temporaryRuntimeFallback: null,
   _debugState: null,
   _storageKeys: {
-    url: "ttvRemoteConfigUrl",
     cache: "ttvRemoteConfigCache",
     version: "ttvRemoteConfigVersion",
     lastKnownGood: "ttvLastKnownGoodSignedConfig",
@@ -30,8 +26,6 @@ const RemoteConfig = {
 
   init() {
     var keys = [
-      this._storageKeys.url,
-      this._storageKeys.cache,
       this._storageKeys.version,
       this._storageKeys.lastKnownGood,
       this._storageKeys.runtimeCandidates,
@@ -39,18 +33,14 @@ const RemoteConfig = {
       this._storageKeys.debug
     ];
     chrome.storage.local.get(keys, (result) => {
-      this._url = this._sanitizeUrl(result && result[this._storageKeys.url] || this._defaultUrl);
       this._lastKnownGoodSignedConfig = this._normalizeSignedConfig(result && result[this._storageKeys.lastKnownGood]);
       this._runtimeCandidates = this._normalizeRuntimeCandidates(result && result[this._storageKeys.runtimeCandidates]);
       this._temporaryRuntimeFallback = this._normalizeTemporaryRuntimeFallback(result && result[this._storageKeys.temporaryFallback]);
       this._debugState = this._normalizeDebugState(result && result[this._storageKeys.debug]);
       this._lastVersion = this._getSignedVersion(this._lastKnownGoodSignedConfig) || (result && result[this._storageKeys.version] || 0);
-      var cachedEffectiveCache = this._normalizeEffectiveCache(result && result[this._storageKeys.cache]);
-      this._legacyEffectiveCache = cachedEffectiveCache && cachedEffectiveCache.source === "legacy-remote" ? cachedEffectiveCache : null;
       this._pruneVolatileState();
 
       if (this._lastKnownGoodSignedConfig) this._effectiveCache = this._buildEffectiveCacheFromSignedConfig("cached-signed-remote");
-      else if (this._legacyEffectiveCache) this._effectiveCache = this._legacyEffectiveCache;
       else this._effectiveCache = this._buildBundledCache();
 
       this._persistDebugState();
@@ -58,34 +48,10 @@ const RemoteConfig = {
       this._persistEffectiveCache(this._effectiveCache);
       this._broadcastUpdates(this._effectiveCache);
 
-      if (!this._url) {
-        console.log("[TTV] Remote config: No URL configured");
-        return;
-      }
-
       console.log("[TTV] Remote config: URL = " + this._url);
       setTimeout(() => this._check("startup"), 10000);
       this._intervalId = setInterval(() => this._check("scheduled"), this._checkIntervalMs);
     });
-  },
-
-  _sanitizeUrl(candidateUrl) {
-    var trustedDomains = ["dorquex-ctrl.github.io", "raw.githubusercontent.com"];
-    var url = candidateUrl || this._defaultUrl;
-    if (!url || typeof url !== "string" || !url.startsWith("https://")) {
-      console.warn("[TTV] Remote config: Rejecting non-HTTPS URL");
-      url = this._defaultUrl;
-    }
-    try {
-      var host = new URL(url).hostname;
-      if (!trustedDomains.some(function (domain) { return host === domain || host.endsWith("." + domain); })) {
-        console.warn("[TTV] Remote config: Rejecting untrusted URL domain: " + host);
-        url = this._defaultUrl;
-      }
-    } catch (e) {
-      url = this._defaultUrl;
-    }
-    return url;
   },
 
   _stableStringify(value) {
@@ -181,17 +147,6 @@ const RemoteConfig = {
     };
     if (!normalized.gql.clientId.active || !normalized.gql.playbackAccessToken.hash.active || !normalized.gql.playbackAccessToken.query.active) return null;
     if (!normalized.signature.alg || !normalized.signature.keyId || !normalized.signature.value) return null;
-    return normalized;
-  },
-
-  _normalizeEffectiveCache(cache) {
-    if (!cache || typeof cache !== "object") return null;
-    var normalized = Object.assign({}, cache);
-    if (!this._isValidClientId(normalized.clientId) || !this._isValidHash(normalized.playbackAccessTokenHash)) return null;
-    if (normalized.playbackAccessTokenQuery && !this._isValidQuery(normalized.playbackAccessTokenQuery)) normalized.playbackAccessTokenQuery = "";
-    normalized.clientIdFallbacks = Array.isArray(normalized.clientIdFallbacks) ? normalized.clientIdFallbacks.filter(this._isValidClientId.bind(this)) : [];
-    normalized.playbackAccessTokenHashFallbacks = Array.isArray(normalized.playbackAccessTokenHashFallbacks) ? normalized.playbackAccessTokenHashFallbacks.filter(this._isValidHash.bind(this)) : [];
-    normalized.temporaryFallbacks = normalized.temporaryFallbacks && typeof normalized.temporaryFallbacks === "object" ? normalized.temporaryFallbacks : {};
     return normalized;
   },
 
@@ -434,18 +389,6 @@ const RemoteConfig = {
     };
   },
 
-  _buildLegacyCache(config) {
-    var cache = this._buildBundledCache();
-    cache.schema = 1;
-    cache.remoteConfigVersion = typeof config._version === "number" ? config._version : 0;
-    cache.source = "legacy-remote";
-    cache.clientId = config.clientId;
-    cache.playbackAccessTokenHash = config.playbackAccessTokenHash;
-    cache.activeClientIdSource = "legacy-remote";
-    cache.activeHashSource = "legacy-remote";
-    return cache;
-  },
-
   _applyEffectiveCache(cache, callback) {
     this._effectiveCache = cache;
     this._debugState.lastAppliedSource = cache && cache.source || "";
@@ -566,7 +509,6 @@ const RemoteConfig = {
   },
 
   async _check(reason) {
-    if (!this._url) return;
     try {
       var response = await fetch(this._url, {
         cache: "no-cache",
@@ -601,26 +543,26 @@ const RemoteConfig = {
           return;
         }
 
-        this._recordFetchResult("signed-remote", "Signed config accepted", response.status, reason);
         var currentUnsigned = this._lastKnownGoodSignedConfig ? this._canonicalizeForSignature(this._lastKnownGoodSignedConfig) : "";
         var nextUnsigned = this._canonicalizeForSignature(normalized);
+        // Every signed version stays public in the repository history, so a
+        // valid signature alone could bring back an old config.
+        var isOlder = normalized._version < this._lastVersion;
+        var reusesVersion = normalized._version === this._lastVersion && currentUnsigned && nextUnsigned !== currentUnsigned;
+        if (isOlder || reusesVersion) {
+          this._recordFetchResult("stale-version", "Version " + normalized._version + " is not newer than " + this._lastVersion, response.status, reason);
+          return;
+        }
+
+        this._recordFetchResult("signed-remote", "Signed config accepted", response.status, reason);
         if (nextUnsigned !== currentUnsigned) {
           this._lastKnownGoodSignedConfig = normalized;
           this._lastVersion = normalized._version;
           this._temporaryRuntimeFallback = {};
-          this._legacyEffectiveCache = null;
           this._persistSignedConfig();
           this._persistVolatileState();
         }
         this._applyEffectiveCache(this._buildEffectiveCacheFromSignedConfig("signed-remote"));
-        return;
-      }
-
-      if (config && this._isValidHash(config.playbackAccessTokenHash) && this._isValidClientId(config.clientId) && !this._lastKnownGoodSignedConfig) {
-        var legacyCache = this._buildLegacyCache(config);
-        this._legacyEffectiveCache = legacyCache;
-        this._recordFetchResult("legacy-remote", "Accepted legacy config", response.status, reason);
-        this._applyEffectiveCache(legacyCache);
         return;
       }
 
@@ -754,7 +696,6 @@ const RemoteConfig = {
     this._persistVolatileState();
     this._persistDebugState();
     if (this._lastKnownGoodSignedConfig) this._applyEffectiveCache(this._buildEffectiveCacheFromSignedConfig("cached-signed-remote"), callback);
-    else if (this._legacyEffectiveCache) this._applyEffectiveCache(this._legacyEffectiveCache, callback);
     else this._applyEffectiveCache(this._buildBundledCache(), callback);
   },
 
@@ -766,7 +707,7 @@ const RemoteConfig = {
     chrome.storage.local.remove([this._storageKeys.lastKnownGood, this._storageKeys.version], () => {
       this._persistVolatileState();
       this._persistDebugState();
-      this._applyEffectiveCache(this._legacyEffectiveCache || this._buildBundledCache(), () => {
+      this._applyEffectiveCache(this._buildBundledCache(), () => {
         this._check("reset-signed-cache");
         if (typeof callback === "function") callback();
       });
