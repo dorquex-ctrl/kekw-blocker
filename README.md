@@ -13,7 +13,7 @@
   <a href="https://ko-fi.com/dorquex"><img src="https://img.shields.io/badge/Support-Ko--fi-ff5e5b?logo=ko-fi&logoColor=white" alt="Ko-fi"></a>
   <img src="https://img.shields.io/badge/version-1.1.1-bf94ff" alt="Version">
   <img src="https://img.shields.io/badge/manifest-v2-333" alt="Manifest V2">
-  <img src="https://img.shields.io/badge/firefox%20%7C%20chromium-supported-green" alt="Browsers">
+  <img src="https://img.shields.io/badge/firefox-supported-green" alt="Browsers">
 </p>
 
 ---
@@ -45,9 +45,11 @@ If both extraction and AI fallback fail, the pipeline sends a **Discord alert** 
 
 ## Installation
 
-### Chromium (Chrome, Brave, Edge, Opera, Vivaldi, Arc)
+### Chromium-based browsers
 
-This extension is **Manifest V2**. Use it as an **unpacked Developer Mode** extension in Chromium-based browsers that still allow local MV2 installs. Standard MV2 store/user support is already gone, and broader Chromium support may require an MV3 migration later.
+This extension is **Manifest V2**. Chrome has disabled Manifest V2 extensions everywhere since 24 July 2025, users cannot turn them back on, and Chrome 139 removed the `ExtensionManifestV2Availability` policy ([Chrome's timeline](https://developer.chrome.com/docs/extensions/develop/migrate/mv2-deprecation-timeline)). It no longer runs in Chrome. Other Chromium-based browsers follow Chromium's code, so check yours before trying. Chromium support needs a Manifest V3 port.
+
+If your browser still runs Manifest V2 extensions:
 
 1. Download or clone this repo
 2. Open your browser's extensions page (`chrome://extensions`, `brave://extensions`, `edge://extensions`, etc.)
