@@ -134,4 +134,4 @@ If KEKW Blocker saves you from Twitch ads, consider supporting development:
 
 ## License
 
-MIT
+MIT. The Worker hook in `src/content/page-inject.js` is derived from [VAFT](https://github.com/pixeltris/TwitchAdSolutions) by the TwitchAdSolutions contributors, also under the MIT License. See [LICENSE](LICENSE).
